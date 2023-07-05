@@ -1,0 +1,6 @@
+/venv/
+/.vscode/
+Scripts/__pycache__/
+Simulaciones/**.net
+Simulaciones/**.log
+Simulaciones/**.raw
