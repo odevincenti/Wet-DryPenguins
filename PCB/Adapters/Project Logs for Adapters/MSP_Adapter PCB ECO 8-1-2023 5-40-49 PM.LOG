@@ -1,0 +1,14 @@
+Change Component Designator: OldDesignator= NewDesignator=J1
+Change Component Designator: OldDesignator= NewDesignator=J2
+Change Component Designator: OldDesignator= NewDesignator=J3
+Change Component Designator: OldDesignator= NewDesignator=J4
+Added Component: Designator=J?(SIP8)
+Added Pin To Net: NetName=DVSS Pin=J4-7
+Added Pin To Net: NetName=DVSS Pin=U1-31
+Added Pin To Net: NetName=DVSS Pin=U1-33
+Added Net: Name=DVSS
+Added Member To Class: ClassName=MSP_Adapter Member=Component J2 CON8
+Added Member To Class: ClassName=MSP_Adapter Member=Component J3 CON8
+Added Member To Class: ClassName=MSP_Adapter Member=Component J4 CON8
+Added Member To Class: ClassName=MSP_Adapter Member=Component J? CON8
+Added Room: Name=MSP_Adapter

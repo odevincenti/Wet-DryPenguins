@@ -1,0 +1,100 @@
+Added Component: Designator=J1(SIP8)
+Added Component: Designator=J2(SIP8)
+Added Component: Designator=J3(SIP8)
+Added Component: Designator=J4(SIP8)
+Added Component: Designator=U1(FP-RHB0032E-IPC_A)
+Added Pin To Net: NetName=DVCC Pin=J4-8
+Added Pin To Net: NetName=DVCC Pin=U1-32
+Added Net: Name=DVCC
+Added Pin To Net: NetName=NC Pin=J3-4
+Added Pin To Net: NetName=NC Pin=U1-20
+Added Net: Name=NC
+Added Pin To Net: NetName=P1.0 Pin=J1-7
+Added Pin To Net: NetName=P1.0 Pin=U1-7
+Added Net: Name=P1.0
+Added Pin To Net: NetName=P1.1 Pin=J1-8
+Added Pin To Net: NetName=P1.1 Pin=U1-8
+Added Net: Name=P1.1
+Added Pin To Net: NetName=P1.2 Pin=J2-1
+Added Pin To Net: NetName=P1.2 Pin=U1-9
+Added Net: Name=P1.2
+Added Pin To Net: NetName=P1.3 Pin=J2-2
+Added Pin To Net: NetName=P1.3 Pin=U1-10
+Added Net: Name=P1.3
+Added Pin To Net: NetName=P1.4 Pin=J1-3
+Added Pin To Net: NetName=P1.4 Pin=U1-3
+Added Net: Name=P1.4
+Added Pin To Net: NetName=P1.5 Pin=J1-4
+Added Pin To Net: NetName=P1.5 Pin=U1-4
+Added Net: Name=P1.5
+Added Pin To Net: NetName=P1.6 Pin=J1-5
+Added Pin To Net: NetName=P1.6 Pin=U1-5
+Added Net: Name=P1.6
+Added Pin To Net: NetName=P1.7 Pin=J1-6
+Added Pin To Net: NetName=P1.7 Pin=U1-6
+Added Net: Name=P1.7
+Added Pin To Net: NetName=P2.0 Pin=J4-5
+Added Pin To Net: NetName=P2.0 Pin=U1-29
+Added Net: Name=P2.0
+Added Pin To Net: NetName=P2.1 Pin=J4-6
+Added Pin To Net: NetName=P2.1 Pin=U1-30
+Added Net: Name=P2.1
+Added Pin To Net: NetName=P2.2 Pin=J2-3
+Added Pin To Net: NetName=P2.2 Pin=U1-11
+Added Net: Name=P2.2
+Added Pin To Net: NetName=P2.3 Pin=J2-6
+Added Pin To Net: NetName=P2.3 Pin=U1-14
+Added Net: Name=P2.3
+Added Pin To Net: NetName=P2.4 Pin=J3-1
+Added Pin To Net: NetName=P2.4 Pin=U1-17
+Added Net: Name=P2.4
+Added Pin To Net: NetName=P2.5 Pin=J3-2
+Added Pin To Net: NetName=P2.5 Pin=U1-18
+Added Net: Name=P2.5
+Added Pin To Net: NetName=P2.6 Pin=J3-3
+Added Pin To Net: NetName=P2.6 Pin=U1-19
+Added Net: Name=P2.6
+Added Pin To Net: NetName=P2.7 Pin=J4-1
+Added Pin To Net: NetName=P2.7 Pin=U1-25
+Added Net: Name=P2.7
+Added Pin To Net: NetName=P3.0 Pin=J2-4
+Added Pin To Net: NetName=P3.0 Pin=U1-12
+Added Net: Name=P3.0
+Added Pin To Net: NetName=P3.1 Pin=J2-8
+Added Pin To Net: NetName=P3.1 Pin=U1-16
+Added Net: Name=P3.1
+Added Pin To Net: NetName=P3.2 Pin=J4-3
+Added Pin To Net: NetName=P3.2 Pin=U1-27
+Added Net: Name=P3.2
+Added Pin To Net: NetName=P3.3 Pin=J2-5
+Added Pin To Net: NetName=P3.3 Pin=U1-13
+Added Net: Name=P3.3
+Added Pin To Net: NetName=P3.4 Pin=J2-7
+Added Pin To Net: NetName=P3.4 Pin=U1-15
+Added Net: Name=P3.4
+Added Pin To Net: NetName=P3.5 Pin=J4-2
+Added Pin To Net: NetName=P3.5 Pin=U1-26
+Added Net: Name=P3.5
+Added Pin To Net: NetName=P3.6 Pin=J4-4
+Added Pin To Net: NetName=P3.6 Pin=U1-28
+Added Net: Name=P3.6
+Added Pin To Net: NetName=P3.7 Pin=J3-5
+Added Pin To Net: NetName=P3.7 Pin=U1-21
+Added Net: Name=P3.7
+Added Pin To Net: NetName=P4.0 Pin=J3-6
+Added Pin To Net: NetName=P4.0 Pin=U1-22
+Added Net: Name=P4.0
+Added Pin To Net: NetName=P4.1 Pin=J3-7
+Added Pin To Net: NetName=P4.1 Pin=U1-23
+Added Net: Name=P4.1
+Added Pin To Net: NetName=P4.2 Pin=J3-8
+Added Pin To Net: NetName=P4.2 Pin=U1-24
+Added Net: Name=P4.2
+Added Pin To Net: NetName=RSTn Pin=J1-1
+Added Pin To Net: NetName=RSTn Pin=U1-1
+Added Net: Name=RSTn
+Added Pin To Net: NetName=TEST Pin=J1-2
+Added Pin To Net: NetName=TEST Pin=U1-2
+Added Net: Name=TEST
+Added Class: Name=MSP_Adapter
+Added Room: Name=MSP_Adapter
