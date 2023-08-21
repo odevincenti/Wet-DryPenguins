@@ -1,0 +1,5 @@
+Removed Pin From Net: NetName=Base_Detect Pin=U1-16
+Added Pin To Net: NetName=Base_Detect Pin=U1-24
+Added Pin To Net: NetName=P3.1 Pin=U1-16
+Added Net: Name=P3.1
+Added Room: Name=Prototype

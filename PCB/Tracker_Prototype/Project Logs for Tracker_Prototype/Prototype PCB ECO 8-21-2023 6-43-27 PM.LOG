@@ -1,0 +1,6 @@
+Removed Pin From Net: NetName=DVCC Pin=PROG-1
+Removed Pin From Net: NetName=TEST Pin=PROG-3
+Change Component Footprint: Designator=C2 Old Footprint=WCAP-ASLU_D3H5.5 New Footprint=WCAP-ASLU_D3H5.5
+Added Pin To Net: NetName=TEST Pin=PROG-1
+Added Pin To Net: NetName=DVCC Pin=PROG-3
+Added Room: Name=Prototype

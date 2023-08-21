@@ -1,0 +1,12 @@
+Added Component: Designator=BAT+(TPTH)
+Added Component: Designator=BAT-(TPTH)
+Added Component: Designator=D8(SMAK)
+Added Pin To Net: NetName=DVSS Pin=BAT--1
+Added Pin To Net: NetName=DVCC Pin=D8-2
+Added Pin To Net: NetName=NetBAT+_1 Pin=BAT+-1
+Added Pin To Net: NetName=NetBAT+_1 Pin=D8-1
+Added Net: Name=NetBAT+_1
+Added Member To Class: ClassName=Prototype Member=Component BAT+ TP
+Added Member To Class: ClassName=Prototype Member=Component BAT- TP
+Added Member To Class: ClassName=Prototype Member=Component D8 1N5158
+Added Room: Name=Prototype
