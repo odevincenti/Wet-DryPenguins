@@ -1,0 +1,171 @@
+Added Component: Designator=C1(0805)
+Added Component: Designator=C2(WCAP-ASLU_D3H5.5)
+Add component (AddParameter): Name = "Capacitance"; Value = "10µF"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Case/Package"; Value = "Radial"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Diameter"; Value = "3mm"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Dissipation Factor"; Value = "18%"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Height"; Value = "5.5mm"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Leakage Current"; Value = "3µA"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Length"; Value = "5.5mm"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Life (Hours)"; Value = "2000hours"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Max Operating Temperature"; Value = "85°C"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Min Operating Temperature"; Value = "-40°C"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "NexarPartId"; Value = "97583746"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Ripple Current"; Value = "20mA"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "RoHS"; Value = "Compliant"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Tolerance"; Value = "20%"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Voltage Rating"; Value = "16V"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Voltage Rating (DC)"; Value = "16V"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Width"; Value = "3.3mm"; VariantName = "[No Variations]"
+Added Component: Designator=C3(0805)
+Added Component: Designator=C4(0805)
+Added Component: Designator=C5(0805)
+Added Component: Designator=COM(SIP2)
+Added Component: Designator=D1(SMAK)
+Added Component: Designator=D2(SMAK)
+Added Component: Designator=D3(SMAK)
+Added Component: Designator=D4(SMAK)
+Added Component: Designator=D5(0805)
+Added Component: Designator=D6(0805)
+Added Component: Designator=D7(0805)
+Added Component: Designator=PROG(SIP4)
+Added Component: Designator=PWR(SIP2)
+Added Component: Designator=R1(0805)
+Added Component: Designator=R2(0805)
+Added Component: Designator=R3(0805)
+Added Component: Designator=R5(0805)
+Added Component: Designator=R6(0805)
+Added Component: Designator=R7(0805)
+Added Component: Designator=RST(SIP2)
+Added Component: Designator=U1(FP-RHB0032E-IPC_A)
+Added Component: Designator=Y1(BGA4C100X41P2X2_154X84X60N)
+Added Component: Designator=Y2(CAP100)
+Added Pin To Net: NetName=Base_Detect Pin=D2-2
+Added Pin To Net: NetName=Base_Detect Pin=U1-16
+Added Net: Name=Base_Detect
+Added Pin To Net: NetName=DVCC Pin=C1-1
+Added Pin To Net: NetName=DVCC Pin=C2-1
+Added Pin To Net: NetName=DVCC Pin=D1-2
+Added Pin To Net: NetName=DVCC Pin=PROG-1
+Added Pin To Net: NetName=DVCC Pin=R3-1
+Added Pin To Net: NetName=DVCC Pin=R5-2
+Added Pin To Net: NetName=DVCC Pin=U1-32
+Added Pin To Net: NetName=DVCC Pin=Y1-3
+Added Net: Name=DVCC
+Added Pin To Net: NetName=DVSS Pin=C1-2
+Added Pin To Net: NetName=DVSS Pin=C2-2
+Added Pin To Net: NetName=DVSS Pin=C3-2
+Added Pin To Net: NetName=DVSS Pin=C4-2
+Added Pin To Net: NetName=DVSS Pin=C5-2
+Added Pin To Net: NetName=DVSS Pin=D4-1
+Added Pin To Net: NetName=DVSS Pin=D5-2
+Added Pin To Net: NetName=DVSS Pin=D6-2
+Added Pin To Net: NetName=DVSS Pin=D7-2
+Added Pin To Net: NetName=DVSS Pin=PROG-4
+Added Pin To Net: NetName=DVSS Pin=RST-2
+Added Pin To Net: NetName=DVSS Pin=U1-31
+Added Pin To Net: NetName=DVSS Pin=U1-33
+Added Pin To Net: NetName=DVSS Pin=Y1-1
+Added Pin To Net: NetName=DVSS Pin=Y1-4
+Added Net: Name=DVSS
+Added Pin To Net: NetName=GNDext Pin=D4-2
+Added Pin To Net: NetName=GNDext Pin=PWR-2
+Added Net: Name=GNDext
+Added Pin To Net: NetName=NC Pin=U1-20
+Added Net: Name=NC
+Added Pin To Net: NetName=NetC4_1 Pin=C4-1
+Added Pin To Net: NetName=NetC4_1 Pin=Y2-1
+Added Net: Name=NetC4_1
+Added Pin To Net: NetName=NetC5_1 Pin=C5-1
+Added Pin To Net: NetName=NetC5_1 Pin=Y2-2
+Added Net: Name=NetC5_1
+Added Pin To Net: NetName=NetD1_1 Pin=D1-1
+Added Pin To Net: NetName=NetD1_1 Pin=D2-1
+Added Pin To Net: NetName=NetD1_1 Pin=D3-2
+Added Net: Name=NetD1_1
+Added Pin To Net: NetName=NetD5_1 Pin=D5-1
+Added Pin To Net: NetName=NetD5_1 Pin=R5-1
+Added Net: Name=NetD5_1
+Added Pin To Net: NetName=NetD6_1 Pin=D6-1
+Added Pin To Net: NetName=NetD6_1 Pin=R6-1
+Added Net: Name=NetD6_1
+Added Pin To Net: NetName=NetD7_1 Pin=D7-1
+Added Pin To Net: NetName=NetD7_1 Pin=R7-1
+Added Net: Name=NetD7_1
+Added Pin To Net: NetName=P1.0 Pin=U1-7
+Added Net: Name=P1.0
+Added Pin To Net: NetName=P1.1 Pin=U1-8
+Added Net: Name=P1.1
+Added Pin To Net: NetName=P1.2 Pin=U1-9
+Added Net: Name=P1.2
+Added Pin To Net: NetName=P1.3 Pin=U1-10
+Added Net: Name=P1.3
+Added Pin To Net: NetName=P1.4 Pin=R1-1
+Added Pin To Net: NetName=P1.4 Pin=U1-3
+Added Net: Name=P1.4
+Added Pin To Net: NetName=P1.5 Pin=R2-2
+Added Pin To Net: NetName=P1.5 Pin=U1-4
+Added Net: Name=P1.5
+Added Pin To Net: NetName=P1.6 Pin=U1-5
+Added Net: Name=P1.6
+Added Pin To Net: NetName=P1.7 Pin=U1-6
+Added Net: Name=P1.7
+Added Pin To Net: NetName=P2.0 Pin=U1-29
+Added Net: Name=P2.0
+Added Pin To Net: NetName=P2.1 Pin=U1-30
+Added Pin To Net: NetName=P2.1 Pin=Y1-2
+Added Net: Name=P2.1
+Added Pin To Net: NetName=P2.2 Pin=U1-11
+Added Net: Name=P2.2
+Added Pin To Net: NetName=P2.3 Pin=U1-14
+Added Net: Name=P2.3
+Added Pin To Net: NetName=P2.4 Pin=R6-2
+Added Pin To Net: NetName=P2.4 Pin=U1-17
+Added Net: Name=P2.4
+Added Pin To Net: NetName=P2.5 Pin=R7-2
+Added Pin To Net: NetName=P2.5 Pin=U1-18
+Added Net: Name=P2.5
+Added Pin To Net: NetName=P2.6 Pin=U1-19
+Added Net: Name=P2.6
+Added Pin To Net: NetName=P2.7 Pin=U1-25
+Added Net: Name=P2.7
+Added Pin To Net: NetName=P3.0 Pin=U1-12
+Added Net: Name=P3.0
+Added Pin To Net: NetName=P3.2 Pin=U1-27
+Added Net: Name=P3.2
+Added Pin To Net: NetName=P3.3 Pin=U1-13
+Added Net: Name=P3.3
+Added Pin To Net: NetName=P3.4 Pin=U1-15
+Added Net: Name=P3.4
+Added Pin To Net: NetName=P3.5 Pin=U1-26
+Added Net: Name=P3.5
+Added Pin To Net: NetName=P3.6 Pin=U1-28
+Added Net: Name=P3.6
+Added Pin To Net: NetName=P3.7 Pin=U1-21
+Added Net: Name=P3.7
+Added Pin To Net: NetName=P4.0 Pin=U1-22
+Added Net: Name=P4.0
+Added Pin To Net: NetName=P4.1 Pin=U1-23
+Added Net: Name=P4.1
+Added Pin To Net: NetName=P4.2 Pin=U1-24
+Added Net: Name=P4.2
+Added Pin To Net: NetName=RSTn Pin=C3-1
+Added Pin To Net: NetName=RSTn Pin=PROG-2
+Added Pin To Net: NetName=RSTn Pin=R3-2
+Added Pin To Net: NetName=RSTn Pin=RST-1
+Added Pin To Net: NetName=RSTn Pin=U1-1
+Added Net: Name=RSTn
+Added Pin To Net: NetName=RX Pin=COM-2
+Added Pin To Net: NetName=RX Pin=R2-1
+Added Net: Name=RX
+Added Pin To Net: NetName=TEST Pin=PROG-3
+Added Pin To Net: NetName=TEST Pin=U1-2
+Added Net: Name=TEST
+Added Pin To Net: NetName=TX Pin=COM-1
+Added Pin To Net: NetName=TX Pin=R1-2
+Added Net: Name=TX
+Added Pin To Net: NetName=Vext Pin=D3-1
+Added Pin To Net: NetName=Vext Pin=PWR-1
+Added Net: Name=Vext
+Added Class: Name=Prototype
+Added Room: Name=Prototype

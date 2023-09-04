@@ -1,0 +1,5 @@
+Added Pin To Net: NetName=P2.0 Pin=C4-1
+Added Pin To Net: NetName=P2.1 Pin=C5-1
+Added Pin To Net: NetName=P2.0 Pin=Y2-1
+Added Pin To Net: NetName=P2.1 Pin=Y2-2
+Added Room: Name=Prototype

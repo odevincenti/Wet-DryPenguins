@@ -1,0 +1,14 @@
+Removed Pin From Net: NetName=DVCC Pin=PROG-3
+Removed Pin From Net: NetName=DVSS Pin=PROG-4
+Added Component: Designator=PWR?(SIP2)
+Added Component: Designator=PWR?(SIP2)
+Added Pin To Net: NetName=DVSS Pin=PROG-3
+Added Pin To Net: NetName=DVCC Pin=PROG-4
+Added Pin To Net: NetName=DVSS Pin=PWR?-1
+Added Pin To Net: NetName=P2.1 Pin=PWR?-1
+Added Pin To Net: NetName=DVCC Pin=PWR?-2
+Added Pin To Net: NetName=DVSS Pin=PWR?-2
+Added Member To Class: ClassName=Prototype Member=Component D5 LED
+Added Member To Class: ClassName=Prototype Member=Component PWR? CON2
+Added Member To Class: ClassName=Prototype Member=Component PWR? CON2
+Added Room: Name=Prototype
