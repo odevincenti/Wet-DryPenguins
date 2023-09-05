@@ -1,4 +1,0 @@
-"./prueba_resistencia_plus.obj"
-"../lnk_msp430fr2476.cmd"
--lfrwp_init.a
--llibc.a
