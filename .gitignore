@@ -5,3 +5,5 @@ Scripts/__pycache__/
 **.log
 **.raw
 **.op.raw
+**/Debug/*
+**/.settings/*
