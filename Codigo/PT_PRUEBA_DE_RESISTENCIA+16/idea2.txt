@@ -1,0 +1,56 @@
+----------------------------------------------------------
+
+1 pulso			->		1282 ms
+67394,7 pulsos	<-	 	1 dia = 86 400 000 ms
+ = 1 full memory + 1859,7 pulsos
+
+5616,2 pulsos	<-		2 horas = 7 200 000 ms
+
+----------------------------------------------------------
+
+
+
+Q = QUIT
+X = CANCEL OPERATION
+G = GET: message "getting ..."
+	A = ALL: list of all variables
+	C = COUNTERS (with description)
+	W = WARNINGS
+S = SET: message "setting ..."
+	R = Real time clock
+		1 = enable
+		0 = disable
+R = RESET: resetting al values to 0
+	pasword: 1234
+
+
+
+
+	VARIABLES:
+	=========
+	
+//	COUNTERS:
+Counter 0
+Description 0
+Counter 1
+Description 1
+...
+Counter n
+Desription n
+
+
+Description: Cause of finishing:
+- Current count
+- Full
+- Reset
+- Reset and "on process"
+- UART activation
+- UART "false" activation
+- Caught "on process"
+
+//	WARNINGS:
+Memory full (space for counters full)
+
+//  WORKING INDICATORS:
+O = On process
+I = Index (to current counter and descriptor)
