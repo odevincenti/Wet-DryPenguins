@@ -8,3 +8,109 @@ Base conect final y apagado a 14:32
 
 14:32 - 00:24 = 14:08
 14:32 - 04:24 = 10:08
+
+--------------------------------
+
+
+PRENDIDO de nuevo para dejarlo prendido
+4:13
+APAGADO
+4:15
+********************************************************************************************************
+********************************************************************************************************
+
+////////////////////////////////////
+
+Option not valid
+G = get
+S = set
+R = reset all
+Q = quit
+
+////////////////////////////////////
+
+Getting ...
+A = all variables
+X = cancel operation
+
+////////////////////////////////////
+
+RTC = disabled
+Memory full = False
+Current index = 3
+C:0 = 1888 : Counter interrupted by BASE DETECTION
+C:1 = 0 : Counter interrupted by FALSE base detection
+C:2 = 0 : Counter interrupted by BASE DETECTION
+C:3 = 0 : CURRENT counter
+
+Penguin Tracker Beta
+G = get
+S = set
+R = reset counters and warnings
+Q = quit
+
+////////////////////////////////////
+
+Setting ...
+R = enable/disable RTC
+X = cancel operation
+
+////////////////////////////////////
+
+0 = disable
+1 = enable
+
+////////////////////////////////////
+
+RTC enabled
+Going back to main menu
+
+Penguin Tracker Beta
+G = get
+S = set
+R = reset counters and warnings
+Q = quit
+
+////////////////////////////////////
+
+RESETTING COUNTERS AND WARNINGS
+Please insert password
+
+////////////////////////////////////
+
+Resetting counters and warnings now
+Going back to main menu
+
+Penguin Tracker Beta
+G = get
+S = set
+R = reset counters and warnings
+Q = quit
+
+////////////////////////////////////
+
+Getting ...
+A = all variables
+X = cancel operation
+
+////////////////////////////////////
+
+RTC = enabled
+Memory full = False
+Current index = 0
+C:0 = 0 : CURRENT counter
+
+Penguin Tracker Beta
+G = get
+S = set
+R = reset counters and warnings
+Q = quit
+
+////////////////////////////////////
+
+Goodbye!
+Please, disconnect base
+
+
+********************************************************************************************************
+********************************************************************************************************
