@@ -1,0 +1,50 @@
+<mxfile host="app.diagrams.net" modified="2023-09-20T21:42:30.176Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36" etag="Z6JOg78m__bHmE_-pHiw" version="21.6.8" type="device">
+  <diagram name="Page-1" id="ent9wL-jN6UkbQGGaIxV">
+    <mxGraphModel dx="420" dy="217" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="JQMjF-RkJTfRR0I4q0be-5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;startArrow=classicThin;startFill=1;endArrow=classicThin;endFill=1;strokeWidth=2;fillColor=#1ba1e2;strokeColor=#006EAF;" edge="1" parent="1" source="JQMjF-RkJTfRR0I4q0be-3">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="320" y="145" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="JQMjF-RkJTfRR0I4q0be-3" value="&lt;b&gt;Interfaz de datos&lt;/b&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="354" y="130" width="116" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="JQMjF-RkJTfRR0I4q0be-6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;startArrow=classicThin;startFill=1;endArrow=classicThin;endFill=1;strokeWidth=2;fillColor=#e51400;strokeColor=#ff0000;" edge="1" parent="1" source="JQMjF-RkJTfRR0I4q0be-7">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="320" y="175" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="JQMjF-RkJTfRR0I4q0be-7" value="&lt;b&gt;Interfaz eléctrica&lt;/b&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="354" y="160" width="116" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="JQMjF-RkJTfRR0I4q0be-8" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;startArrow=classicThin;startFill=1;endArrow=classicThin;endFill=1;strokeWidth=2;fillColor=#fff2cc;strokeColor=#d6b656;gradientColor=#ffd966;" edge="1" parent="1" source="JQMjF-RkJTfRR0I4q0be-9">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="320" y="205" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="JQMjF-RkJTfRR0I4q0be-9" value="&lt;b&gt;Interfaz mecánica&amp;nbsp;&amp;nbsp;&lt;/b&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="354" y="190" width="124" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="JQMjF-RkJTfRR0I4q0be-10" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;startArrow=classicThin;startFill=1;endArrow=classicThin;endFill=1;strokeWidth=2;fillColor=#d5e8d4;strokeColor=#82b366;" edge="1" parent="1" source="JQMjF-RkJTfRR0I4q0be-11">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="320" y="235" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="JQMjF-RkJTfRR0I4q0be-11" value="&lt;b&gt;Interfaz de entorno&lt;/b&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="356" y="220" width="124" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="JQMjF-RkJTfRR0I4q0be-13" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;startArrow=classicThin;startFill=1;endArrow=classicThin;endFill=1;strokeWidth=2;fillColor=#e1d5e7;strokeColor=#FF66FF;" edge="1" parent="1" source="JQMjF-RkJTfRR0I4q0be-14">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="320" y="265" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="JQMjF-RkJTfRR0I4q0be-14" value="&lt;b&gt;Interfaz gráfica de usuario&lt;/b&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="356" y="250" width="164" height="30" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
