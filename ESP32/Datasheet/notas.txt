@@ -1,0 +1,62 @@
+https://www.upesy.com/blogs/tutorials/esp32-pinout-reference-gpio-pins-ultimate-guide#acef46f3258d486ebeb5ee820b410a87
+
+https://espressif-docs.readthedocs-hosted.com/projects/arduino-esp32/en/latest/tutorials/io_mux.html
+
+https://nodemcu.readthedocs.io/en/latest/
+
+- Placa:  NodeMCU
+https://nodemcu.readthedocs.io/en/latest/
+- Modulo: ESP32-WROOM-32
+- Chip:   ESP32-D0WDQ6
+
+
+PINES
+
+3V3
+EN	  !on/off switch
+P36(SVP)  Ionly&no int R
+P39(SVN)  Ionly&no int R
+P34	  Ionly&no int R
+P35	  Ionly&no int R
+P32		✓
+P33		✓
+P25		✓		- led ROJO
+P26		✓		- led VERDE
+P27		✓		- led AZUL
+P14	  PWM at boot
+P12(MTDI) Strapping Pin
+GND
+P13       	✓
+P9(SD2)	  DNC! (Flash)
+P10(SD3)  DNC! (Flash)
+P11(CND)  DNC! (Flash)
+5V
+
+GND
+P23		✓
+P22		✓
+P1(TX)    PC UART
+P3(RX)    PC UART
+P21		✓
+GND
+P19		✓
+P18		✓
+P5	  PWM at boot
+P17       DNC if WROVER
+P16	  DNC if WROVER
+P4	  	✓
+P0        Strapping Pin
+P2        Strapping Pin
+P15(MTDO) Strapping Pin
+P8(SD1)	  DNC! (Flash)
+P7(SD0)	  DNC! (Flash)
+P6(CLK)	  DNC! (Flash)
+
+
+Strapping Pin:
+avoid external pull-up or pull-down resistor (they determine BOOT or FLASH mode when starting)
+
+
+
+P15: ON = Base_detect 0V
+     OFF= Base_detect 5V
