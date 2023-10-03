@@ -1,0 +1,15 @@
+   PT_PRUEBA_DE_RESISTENCIA+16
+-> PT_PRUEBA_PLACA_V3_01 (con cosas de PT_Minitipo_ADCTest03)
+-> PT_PRUEBA_PLACA_V3_02
+-> PT_PRUEBA_PLACA_V3_03
+-> PT_PRUEBA_PLACA_V3_04
+-> PT_PRUEBA_PLACA_V3_05
+-> PT_PRUEBA_CONSUMO_Fase2_02 (con codigo de PT_PRUEBA_CONSUMO_Fase2_01, lo hago por el config)
+-> PT_PRUEBA_CONSUMO_Fase2_03
+-> PT_PRUEBA_CONSUMO_Fase2_04
+-> PT_TEMPLATE_01
+-> PT_FINAL_2023_01 (con ideas y codigo de PT_PRUEBA_SAVE_RTCCNT_04)
+-> PT_FINAL_2023_02 (hora de verificar que con active = false -y todas sus variaciones- esto funciona) ( NO OLVIDAR DESCONECTAR EL TX - RX DE UART)
+-> PT_FINAL_2023_03 
+-> PT_FINAL_2023_04 
+-> PT_FINAL_2023_05 (quitandole cosas que no se van a usar en el modelo final, como mucho led y demas)

@@ -1,0 +1,55 @@
+// TODO
+//- agregar que se despierte desde base directo a uart
+//- PONER HORA DE INICIO
+//- si desconecta base, se salga solo de uart
+- mediante uart y rtc para setear
+//- always unknown command \n
+- lista de reseteos (con 2 indices each)
+//- set led / clr led
+//- paridad set, y chequeo con NAK
+- si se despierta al inicio, otro texto?
+//- revisar indice 65535
+// - ver porq se glitchea al inicio
+- sacar leds
+- corregir largo arreglo log
+- corregir minuto calibrado 
+- corregir index maximo
+
+
+// https://e2e.ti.com/support/microcontrollers/msp-low-power-microcontrollers-group/msp430/f/msp-low-power-microcontroller-forum/461905/msp430fr6989-unable-to-use-fram2-with-pragma-persistent/1712925#1712925
+
+
+65535 (MOD mas grande)
+
+Digamos, maximo 60 min = 60000
+-> 1 min = 1000
+-> precision de 0,1%
+
+Divisor de RTC a 1000
+-> RTCCLK a 10Hz
+-> 1 = 0,1 segs
+-> 600 = 1 min
+
+Divisor de RTC a 256
+-> RTCCLK a 39,0625 Hz
+-> 1 = 0,0256 segs
+-> 2343,75 = 1 min
+
+Divisor de RTC a 100
+-> RTCCLK a 100Hz
+-> 1 = 0,01 segs
+-> 6000 = 1 min
+
+
+
+
+Maximo 15 min = 60000
+-> 1 min hasta 4000
+
+Divisor de RTC a 256
+-> RTCCLK a 39,0625 Hz
+-> 1 = 0,0256 segs
+-> 2343,75 = 1 min
+
+
+
