@@ -64,6 +64,8 @@ void setup() {
 }
 
 void msp_communication(void){
+  static bool timeout = true;
+
   bool connected = true;
   int last_time = millis();
   change_led_color(GREEN);
@@ -74,6 +76,48 @@ void msp_communication(void){
     }
 
     if(PC.read() == 'S'){
+      MSP.print("Q");
+
+      timeout = true;
+      do{
+        if(MSP.read() == 'O'){
+
+          timeout = false;
+          break;
+        }
+      }while(millis()-last_time <= 1000);
+      if(timeout){
+        change_led_color(MAGENTA);
+        DISABLE_5V;
+        return;
+      }
+
+      timeout = true;
+      do{
+        if(MSP.read() == 'K'){
+          timeout = false;
+          break;
+        }
+      }while(millis()-last_time <= 1000);
+      if(timeout){
+        change_led_color(MAGENTA);
+        DISABLE_5V;
+        return;
+      }
+
+      timeout = true;
+      do{
+        if(MSP.read() == '\n'){
+          timeout = false;
+          break;
+        }
+      }while(millis()-last_time <= 1000);
+      if(timeout){
+        change_led_color(MAGENTA);
+        DISABLE_5V;
+        return;
+      }
+      delay(100);
       connected = false;
     }
 
@@ -82,6 +126,9 @@ void msp_communication(void){
 }
 
 void loop(){
+  static bool timeout = true;
+  int last_time;
+  
   //static bool connected_to_msp = false;
   //static char byte_from_pc = '\0';
   //static char byte_from_msp = '\0';
@@ -89,7 +136,76 @@ void loop(){
   while(PC.sent_bytes() <= 0);
   //byte_from_pc = PC.read();
   if(PC.read() == CONNECT_TO_MSP){
+    //MSP.flush();
+    change_led_color(RED);
+    ENABLE_5V;
+    last_time = millis();
+
+    delay(1000);
+
+    while(1){
+      while(MSP.sent_bytes()){
+        PC.print(MSP.read());
+      }
+    }
+
+    timeout = true;
+    do{
+      if(MSP.read() == 'O'){
+        timeout = false;
+        break;
+      }
+    }while(millis()-last_time <= 1000);
+    if(timeout){
+      change_led_color(MAGENTA);
+      DISABLE_5V;
+      return;
+    }
+
+    timeout = true;
+    do{
+      if(MSP.read() == 'K'){
+        timeout = false;
+        break;
+      }
+    }while(millis()-last_time <= 1000);
+    if(timeout){
+      change_led_color(MAGENTA);
+      DISABLE_5V;
+      return;
+    }
+
+    timeout = true;
+    do{
+      if(MSP.read() == '\n'){
+        timeout = false;
+        break;
+      }
+    }while(millis()-last_time <= 1000);
+    if(timeout){
+      change_led_color(MAGENTA);
+      DISABLE_5V;
+      return;
+    }
+
+    MSP.print("1234");
+    delay(100);
+    MSP.flush();
+    MSP.print("?");
+    timeout = true;
+    do{
+      if(MSP.read() == '\0'){
+        timeout = false;
+        break;
+      }
+    }while(millis()-last_time <= 1000);
+    if(timeout){
+      change_led_color(YELLOW);
+      return;
+    }
+
     msp_communication();
+    DISABLE_5V;
   }
 }
 
