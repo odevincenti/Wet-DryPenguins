@@ -176,6 +176,7 @@ void loop(){
 // }
 
 void loop(){
+  static bool color = false;
   //static bool timeout = true;
   char byte_from_msp = '\0';
   char byte_from_pc = '\0';
@@ -195,7 +196,14 @@ void loop(){
       if(millis() - last_time >= 1000){
         MSP.write("\n");
         last_time = millis();
-        PC.write("\nKeeping MSP connected...");
+        color = !color;
+        if (color){
+          change_led_color(GREEN);
+        }else{
+          change_led_color(CYAN);
+        }
+        //PC.write("\nKeeping MSP connected...");
+
         PC.flush();
       }
 
