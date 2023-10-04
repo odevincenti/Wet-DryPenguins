@@ -1,4 +1,4 @@
-<mxfile host="app.diagrams.net" modified="2023-10-04T21:05:23.436Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36" etag="CxNL6DJgntFavzPDHUnL" version="22.0.2" type="device">
+<mxfile host="app.diagrams.net" modified="2023-10-04T21:23:41.133Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36" etag="btFyWJZDw-IbzjwI6Cc9" version="22.0.2" type="device">
   <diagram name="Page-1" id="AZl5n2Z-xv-6YmWAkerQ">
     <mxGraphModel dx="1050" dy="542" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
       <root>
@@ -70,9 +70,6 @@
         </mxCell>
         <mxCell id="QTVVxxZJfvImXtELBVtT-6" value="&lt;b&gt;Carcasa mecánica&lt;br&gt;&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeWidth=2;" parent="1" vertex="1">
           <mxGeometry x="160" y="185" width="100" height="60" as="geometry" />
-        </mxCell>
-        <mxCell id="QTVVxxZJfvImXtELBVtT-9" value="Comandos de control (PC)" style="rounded=1;whiteSpace=wrap;html=1;fontStyle=1;fillColor=none;strokeWidth=2;" parent="1" vertex="1">
-          <mxGeometry x="120" y="680" width="110" height="60" as="geometry" />
         </mxCell>
         <mxCell id="QTVVxxZJfvImXtELBVtT-11" value="" style="endArrow=classicThin;startArrow=classicThin;html=1;rounded=0;fillColor=#e3c800;strokeColor=#d6b655;entryX=1;entryY=0.25;entryDx=0;entryDy=0;strokeWidth=2;exitX=0;exitY=0.25;exitDx=0;exitDy=0;edgeStyle=orthogonalEdgeStyle;startFill=1;endFill=1;" parent="1" source="gq82XVnaDERFkmPNpvWh-21" target="QTVVxxZJfvImXtELBVtT-5" edge="1">
           <mxGeometry width="50" height="50" relative="1" as="geometry">
