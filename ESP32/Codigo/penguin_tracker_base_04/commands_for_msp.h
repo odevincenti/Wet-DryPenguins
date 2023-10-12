@@ -3,6 +3,7 @@
 
 #define PC  Serial
 #define MSP Serial2
+#define sent_bytes  available
 
 #define at30C 0
 #define at105C 1

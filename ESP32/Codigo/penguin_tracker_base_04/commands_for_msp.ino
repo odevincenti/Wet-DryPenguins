@@ -7,6 +7,14 @@ void wait_until_character_and_discard(char character, unsigned int times = 1){
   }
 }
 
+void wait_until_receiving_data_from_msp(void){
+  while(MSP.sent_bytes() <= 0);
+}
+
+void discard_data_from_msp(void){
+  while(MSP.sent_bytes()) MSP.read();
+}
+
 // void wait_until_character(char character){
 //   while((char)MSP.peak() != character){MSP.read();}
 // }
@@ -21,9 +29,8 @@ void get_operating_mode(void){
   change_led_color(PROCESSING);
   MSP.write(">");
 
-  while((char)MSP.peek() != '\n')  {MSP.read();}
-  while((char)MSP.peek() != '=')  {MSP.read();}
-  MSP.read();
+  wait_until_character_and_discard('\n');
+  wait_until_character_and_discard('=');
   MSP.read();
   
   // while((char)MSP.read() != '=');
@@ -62,7 +69,8 @@ void get_operating_mode(void){
   PC.write('\n');
 
   MSP.write("<");
-  while(MSP.available()) MSP.read(); //discard_data_from_msp();
+  wait_until_receiving_data_from_msp();
+  discard_data_from_msp();
   PC.flush();
   change_led_color(CONNECTED);
 }

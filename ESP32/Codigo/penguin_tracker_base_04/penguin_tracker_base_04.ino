@@ -5,7 +5,7 @@
 #define ENABLE_5V   digitalWrite(15,LOW)
 #define DISABLE_5V  digitalWrite(15,HIGH)
 
-#define sent_bytes  available
+
 
 void setup() {
   pinMode(15,OUTPUT);
