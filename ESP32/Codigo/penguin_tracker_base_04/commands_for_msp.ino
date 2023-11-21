@@ -7,17 +7,14 @@ void wait_until_character_and_discard(char character, unsigned int times = 1){
   }
 }
 
-void wait_until_receiving_data_from_msp(void){
-  while(MSP.sent_bytes() <= 0);
-}
-
-void discard_data_from_msp(void){
-  while(MSP.sent_bytes()) MSP.read();
-}
-
-// void wait_until_character(char character){
-//   while((char)MSP.peak() != character){MSP.read();}
+// void wait_until_receiving_data_from_msp(void){
+//   while(MSP.sent_bytes() <= 0);
 // }
+
+// void discard_data_from_msp(void){
+//   while(MSP.sent_bytes()) MSP.read();
+// }
+
 
 void get_operating_mode(void){
   char aux[30] = "";
@@ -32,9 +29,6 @@ void get_operating_mode(void){
   wait_until_character_and_discard('\n');
   wait_until_character_and_discard('=');
   MSP.read();
-  
-  // while((char)MSP.read() != '=');
-  // while((char)MSP.read() != ' ');
   
 
   
@@ -67,11 +61,11 @@ void get_operating_mode(void){
     PC.write(OPERATING_MODE__BOTH);
   }
   PC.write('\n');
+  PC.flush();
 
   MSP.write("<");
-  wait_until_receiving_data_from_msp();
-  discard_data_from_msp();
-  PC.flush();
+  wait_until_character_and_discard('*',25);
+
   change_led_color(CONNECTED);
 }
 
@@ -83,11 +77,9 @@ void get_indexes(void){
   change_led_color(PROCESSING);
   MSP.write(">");
 
-  for (i=0;i<9;i++){
-    while((char)MSP.read() != '\n');
-  }
-  while((char)MSP.read() != '=');
-  while((char)MSP.read() != ' ');
+  wait_until_character_and_discard('\n',9);
+  wait_until_character_and_discard('=');
+  wait_until_character_and_discard(' ');
 
   index = 0;
   do{
@@ -99,9 +91,9 @@ void get_indexes(void){
     }
   }while(byte_from_msp != '\n');
   aux[index] = '\0';
-  while((char)MSP.read() != '\n');
-  while((char)MSP.read() != '=');
-  while((char)MSP.read() != ' ');
+  wait_until_character_and_discard('\n');
+  wait_until_character_and_discard('=');
+  wait_until_character_and_discard(' ');
   
   do{
     byte_from_msp = (char) MSP.read();
@@ -112,10 +104,11 @@ void get_indexes(void){
   PC.print('\n');
   PC.print(aux);
   PC.print('\n');
+  PC.flush();
 
   MSP.write("<");
-  while(MSP.available()) MSP.read(); //discard_data_from_msp();
-  PC.flush();
+  wait_until_character_and_discard('*',25);
+  
   change_led_color(CONNECTED);
 }
 
@@ -124,16 +117,14 @@ void get_calibration_C(bool atC){
 
   change_led_color(PROCESSING);
   MSP.write("G");
-  while((char) MSP.read() != '*');
+  wait_until_character_and_discard('*',25);
   MSP.write("0");
-  //while((char) MSP.read() == '*');
-  while((char)MSP.read() != '\n');
+  wait_until_character_and_discard('\n');
   if(atC){
-    while((char)MSP.read() != '\n');
-    while((char)MSP.read() != '\n');
+    wait_until_character_and_discard('\n',2);
   }
-  while((char)MSP.read() != '=');
-  while((char)MSP.read() != ' ');
+  wait_until_character_and_discard('=');
+  wait_until_character_and_discard(' ');
   do{
     byte_from_msp = (char) MSP.read();
     if(byte_from_msp >= 0x20 && byte_from_msp < 0x7F){
@@ -142,9 +133,10 @@ void get_calibration_C(bool atC){
     
   }while(byte_from_msp != '\n');
   PC.print('\n');
-  //while((char) MSP.read() != '*');
-  while(MSP.available()) MSP.read(); //discard_data_from_msp();
   PC.flush();
+
+  wait_until_character_and_discard('*',25);
+  
   change_led_color(CONNECTED);
 }
 
@@ -153,9 +145,8 @@ void toggle_led(){
 
   change_led_color(PROCESSING);
   MSP.write("L");
-  while((char)MSP.read() != '\n');
-  //while((char)MSP.read() != '=');
-  while((char)MSP.read() != ' ');
+  wait_until_character_and_discard('\n');
+  wait_until_character_and_discard(' ');
   do{
     byte_from_msp = (char) MSP.read();
     if(byte_from_msp >= 0x20 && byte_from_msp < 0x7F){
@@ -164,9 +155,10 @@ void toggle_led(){
     
   }while(byte_from_msp != '\n');
   PC.print('\n');
-  //while((char) MSP.read() != '*');
-  while(MSP.available()) MSP.read(); //discard_data_from_msp();
   PC.flush();
+
+  wait_until_character_and_discard('*',25);
+  
   change_led_color(CONNECTED);
 }
 
@@ -175,12 +167,11 @@ void get_helper_function(char option){
 
   change_led_color(PROCESSING);
   MSP.write("G");
-  while((char) MSP.read() != '*');
+  wait_until_character_and_discard('*',25);
   MSP.write(option);
-  while((char) MSP.read() == '*');
-  while((char)MSP.read() != '\n');
-  while((char)MSP.read() != '=');
-  while((char)MSP.read() != ' ');
+  wait_until_character_and_discard('\n');
+  wait_until_character_and_discard('=');
+  wait_until_character_and_discard(' ');
   do{
     byte_from_msp = (char) MSP.read();
     if(byte_from_msp >= 0x20 && byte_from_msp < 0x7F){
@@ -189,10 +180,10 @@ void get_helper_function(char option){
     
   }while(byte_from_msp != '\n');
   PC.print('\n');
-  while((char) MSP.read() != '*');
-  while(MSP.available()) MSP.read(); //discard_data_from_msp();
-  //while(MSP.available()) MSP.read();
   PC.flush();
+
+  wait_until_character_and_discard('*',25);
+
   change_led_color(CONNECTED);
 }
 
@@ -200,7 +191,7 @@ void set_helper_function(char option){
   char input_from_base = '0';
   change_led_color(PROCESSING);
   MSP.write("S");
-  while((char) MSP.read() != '*');
+  wait_until_character_and_discard('*',25);
   do{
     MSP.write((char) input_from_base);
     input_from_base = PC.read();
