@@ -18,12 +18,25 @@
 #define DISABLE_TX    digitalWrite(PIN_TX_ENABLE,HIGH)
 
 bool master_control = false;
+bool operating_mode_set = false;
+char new_operating_mode = 0; 
+
+
+
+
 
 bool setting = false;
+bool setting_operating_mode = false;
+bool setting_activation_time = false;
+
 char setting_array[256] = "";
 char setting_command = 0;
 int setting_index = 0;
 int setting_menu_selected = SET_MENU;
+
+char activation_time_array[256] = "";
+int activation_time_index = 0;
+bool activation_time_set = false;
 
 // TODO!
 char starting_date_input[256] = "";
@@ -50,11 +63,13 @@ int H_get_last_events(char input){
 
 
 int H_unknown_input(char input){
-    PC.print("UNKNOWN PC INPUT = ");
-    PC.write(input);
-    PC.print("(");
-    PC.print((int)input);
-    PC.print(")\n");
+    //PC.print("UNKNOWN PC INPUT = ");
+    //PC.write(input);
+    //PC.print("(");
+    //PC.print((int)input);
+    //PC.print(")\n");
+    PC.write(ERROR_INDICATOR);
+    PC.write(TERMINATOR);
     return -1;
 }
 
@@ -82,6 +97,75 @@ int H_activate_master(char input){
     master_control = true;
     PC.print("ACTIVATED MASTER CONTROL\n");
     return 0;
+}
+
+bool compare_strings(const char* substring, const char* main_string){
+    bool answer = true;
+    const char* substring_pointer = substring;
+    const char* main_string_pointer = main_string;
+    while(*main_string_pointer != '\0' && *substring_pointer != '\0' && answer == true){
+        if (*main_string_pointer != *substring_pointer){
+            answer = false;
+        }
+        substring_pointer++;
+        main_string_pointer++;
+    }
+    return answer;
+}
+
+int H_set_operating_mode1(char input){
+    setting_operating_mode = true;
+    PC.print("SET OPERATING MODE PART 1\n");
+    return 0;
+}
+
+int H_set_operating_mode2(char input){
+    setting_operating_mode = false;
+    operating_mode_set = true;
+    if(input < '0'){
+        new_operating_mode ='0';
+    }else if (input > '3'){
+        new_operating_mode ='3';
+    }else{
+        new_operating_mode = input;
+    }
+    
+    PC.print("SET OPERATING MODE PART 2\n");
+    PC.print(OK_INDICATOR);
+    PC.write(TERMINATOR);
+
+    return 0;
+}
+
+int H_get_operating_mode(char input){
+    if (!operating_mode_set){
+        const char* answer = get_from_user_menu_helper(1);
+        if(answer != NULL){
+            if(compare_strings("INACTIVE",answer)){
+                PC.write(OPERATING_MODE__INACTIVE);
+            }else if (compare_strings("WET AND DRY ONLY",answer)){
+                PC.write(OPERATING_MODE__WET_AND_DRY);
+            }else if (compare_strings("TEMPERATURE ONLY",answer)){
+                PC.write(OPERATING_MODE__TEMPERATURE);
+            }else if (compare_strings("WET AND DRY & TEMPERATURE",answer)){
+                PC.write(OPERATING_MODE__BOTH);
+            }else{
+                PC.write(ERROR_INDICATOR);
+            }
+
+            PC.write(TERMINATOR);
+            return 0;
+        }else{
+            PC.write(new_operating_mode);
+            PC.write(TERMINATOR);
+            return -1;
+        }     
+    }else{
+        PC.write(new_operating_mode);
+        PC.write(TERMINATOR);
+        return 0;
+    }
+
 }
 
 int H_get_indexes(char input){
@@ -128,13 +212,26 @@ int H_get_logger_ID(char input){
     return H_get_handler('8');
 }
 int H_get_activ_time(char input){
-    return H_get_handler('9');
+    if (!activation_time_set){
+        return H_get_handler('9');
+    }else{
+        PC.print(activation_time_array);
+        PC.write(TERMINATOR);
+        return 0;
+    }
 }
 int H_get_at30(char input){
     return H_get_handler('0',1);
 }
 int H_get_at105(char input){
     return H_get_handler('0',2);
+}
+
+int H_atime_finished_handler(void){
+    PC.print(OK_INDICATOR);
+    PC.write(TERMINATOR);
+    activation_time_set = true;
+    return 0;    
 }
 
 // TODO: que si no recibe pronto ], considera que fue error!
@@ -151,6 +248,13 @@ int H_set_finished_handler(void){
         PC.write(TERMINATOR);
         return -1;
     }   
+}
+
+int H_atime_init_handler(char input){
+    setting_activation_time = true;
+    activation_time_index = 0;
+    activation_time_array[activation_time_index] = 0;
+    return 0;
 }
 
 int H_set_init_handler(char command, int setting_menu){
@@ -196,15 +300,15 @@ PCinputHandler* input_handlers[128] = { // RETURN 0 = OK; -1 = NOT OK!
 //  @                       A                       B                       C                       D                       E                       F                       G
     &H_unknown_input,       &H_get_activ_time,      &H_unknown_input,       &H_get_calibrated_min,  &H_unknown_input,       &H_get_last_events,     &H_get_FSM_state,       &H_unknown_input,
 //  H                       I                       J                       K                       L                       M                       N                       O
-    &H_unknown_input,       &H_get_logger_ID,       &H_unknown_input,       &H_unknown_input,       &H_toggle_led,          &H_unknown_input,       &H_get_penguin_name,    &H_unknown_input,
+    &H_unknown_input,       &H_get_logger_ID,       &H_unknown_input,       &H_unknown_input,       &H_toggle_led,          &H_get_operating_mode,  &H_get_penguin_name,    &H_unknown_input,
 //  P                       Q                       R                       S                       T                       U                       V                       W
     &H_unknown_input,       &H_unknown_input,       &H_unknown_input,       &H_unknown_input,       &H_get_temp_freq,       &H_unknown_input,       &H_unknown_input,       &H_get_wd_freq,
 //  X                       Y                       Z                       [                       \                       ]                       ^                       _
     &H_get_indexes,         &H_unknown_input,       &H_unknown_input,       &H_unknown_input,       &H_unknown_input,       &H_unknown_input,       &H_unknown_input,       &H_unknown_input,
 //  `                       a                       b                       c                       d                       e                       f                       g
-    &H_unknown_input,       &H_unknown_input,       &H_unknown_input,       &H_set_calibrated_min,  &H_unknown_input,       &H_unknown_input,       &H_unknown_input,       &H_unknown_input,
+    &H_unknown_input,       &H_atime_init_handler,  &H_unknown_input,       &H_set_calibrated_min,  &H_unknown_input,       &H_unknown_input,       &H_unknown_input,       &H_unknown_input,
 //  h                       i                       j                       k                       l                       m                       n                       o
-    &H_unknown_input,       &H_unknown_input,       &H_unknown_input,       &H_unknown_input,       &H_unknown_input,       &H_unknown_input,       &H_set_penguin_name,    &H_unknown_input,
+    &H_unknown_input,       &H_unknown_input,       &H_unknown_input,       &H_unknown_input,       &H_unknown_input,       &H_set_operating_mode1, &H_set_penguin_name,    &H_unknown_input,
 //  p                       q                       r                       s                       t                       u                       v                       w
     &H_unknown_input,       &H_unknown_input,       &H_unknown_input,       &H_unknown_input,       &H_set_temp_freq,       &H_unknown_input,       &H_unknown_input,       &H_set_wd_freq,
 //  x                       y                       z                       {                       |                       }                       ~                       [DEL]
@@ -227,6 +331,11 @@ void setup() {
 
     master_control = false;
     setting = false;
+    setting_operating_mode = false;
+    setting_activation_time = false;
+    operating_mode_set = false;
+    activation_time_set = false;
+
     //test_millis();
 }
 
@@ -300,7 +409,13 @@ void loop(){
             if(answer_from_msp_received && get_current_menu() == DEBUG_MENU){
                 change_led_color(CONNECTED);
                 setting = false;
+                setting_operating_mode = false;
+                setting_activation_time = false;
                 connected = true;
+                operating_mode_set = false;
+                activation_time_set = false;
+                PC.print(OK_INDICATOR);
+                PC.write(TERMINATOR);
             }else{
                 DISABLE_TX;
                 DISABLE_5V;
@@ -313,21 +428,16 @@ void loop(){
                     PC.print("INSTEAD\n");
                 }
                 change_led_color(FAILED_TO_CONNECT);
+                PC.write(ERROR_INDICATOR);
+                PC.write(TERMINATOR);
             }
         }else{
             PC.print("FAILED TO CONNECT: \"OK\" MESSAGE NOT RECEIVED\n");
             change_led_color(FAILED_TO_CONNECT);
+            PC.write(ERROR_INDICATOR);
+            PC.write(TERMINATOR);
         }
-        /*
-        change_led_color(CONNECTING);
-        ENABLE_5V;
-        //discard_data_from_msp();
-        delay(1000);
-        MSP.write("1234");
-        delay(500);
-        //discard_data_from_msp();
-        change_led_color(CONNECTED); // TODO: CHECKEAR QUE ESTÉ CONECTADO!!! HACERLO BIEN!!! CHANGOS!!
-        */
+
         if (connected){
 
             
@@ -349,19 +459,19 @@ void loop(){
                     byte_from_pc = PC.read();
 
                     if(!master_control){
-                        if(!setting){
+                        if(!setting && !setting_operating_mode && !setting_activation_time){
                             if(byte_from_pc >= 0 && byte_from_pc < 128){
                                 (*input_handlers[byte_from_pc])(byte_from_pc); // DO SOMETHING WITH -1!!!
                             }
-                        }else{
+                        }else if(setting){
                             if(byte_from_pc == SETTING_INPUT_FINISHED){
-                                PC.print("SETTING FINISHED, COMMAND = ");
-                                PC.write(setting_command);
-                                PC.print(" AT MENU ");
-                                PC.print(setting_menu_selected);
-                                PC.print("\nSETTING STRING = ");
-                                PC.print(setting_array);
-                                PC.print("\n");
+                                //PC.print("SETTING FINISHED, COMMAND = ");
+                                //PC.write(setting_command);
+                                //PC.print(" AT MENU ");
+                                //PC.print(setting_menu_selected);
+                                //PC.print("\nSETTING STRING = ");
+                                //PC.print(setting_array);
+                                //PC.print("\n");
                                 H_set_finished_handler(); // DO SOMETHING WITH -1!!!
                                 setting = false;
                             }else{
@@ -370,12 +480,26 @@ void loop(){
                                     setting_array[setting_index] = 0;
                                 }
 
-                                PC.print("SETTING, RECEIVED = ");
-                                PC.write(byte_from_pc);
-                                PC.print("\n");
+                                //PC.print("SETTING, RECEIVED = ");
+                                //PC.write(byte_from_pc);
+                                //PC.print("\n");
                             }
                             
+                        }else if (setting_activation_time){
+                            if(byte_from_pc == SETTING_INPUT_FINISHED){
+                                H_atime_finished_handler(); // DO SOMETHING WITH -1!!!
+                                setting_activation_time = false;
+                            }else{
+                                if(activation_time_index < 255){
+                                    activation_time_array[activation_time_index++] =  byte_from_pc;
+                                    activation_time_array[activation_time_index] = 0;
+                                }
 
+                            }
+
+                        }
+                        else{ //setting_operating_mode
+                            H_set_operating_mode2(byte_from_pc);
                         }
                     }else{
                         if (byte_from_pc == MASTER_CONTROL_COMMAND){
