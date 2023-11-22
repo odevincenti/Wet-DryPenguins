@@ -5,7 +5,10 @@
 #include "pinout.h"
 
 #define TERMINATOR '\n'
+//TODO  reemplazar OK por ACK '\x06' cuando termine de verlo por Arduino IDE
+#define OK_INDICATOR "OK"
 #define ERROR_INDICATOR '\x15'
+#define SETTING_INPUT_FINISHED ']'
 
 
 #define ENABLE_5V     digitalWrite(PIN_5V_ENABLE,LOW)
@@ -16,14 +19,35 @@
 
 bool master_control = false;
 
+bool setting = false;
+char setting_array[256] = "";
+char setting_command = 0;
+int setting_index = 0;
+int setting_menu_selected = SET_MENU;
+
+// TODO!
+char starting_date_input[256] = "";
+int operating_mode_to_set = OPERATING_MODE__INACTIVE;
+
 typedef int PCinputHandler(char input);
 
 int H_get_fast_data(char input){
     return 0;
 }
-int H_regular_input(char input){
-    return 0;
+
+int H_get_last_events(char input){
+    bool answer = get_last_events();
+    if(answer){
+        PC.print(OK_INDICATOR);
+        PC.write(TERMINATOR);
+        return 0;
+    }else{
+        PC.write(ERROR_INDICATOR);
+        PC.write(TERMINATOR);
+        return -1;
+    }     
 }
+
 
 int H_unknown_input(char input){
     PC.print("UNKNOWN PC INPUT = ");
@@ -60,6 +84,19 @@ int H_activate_master(char input){
     return 0;
 }
 
+int H_get_indexes(char input){
+    const char* answer = get_from_user_menu_helper(6,5);
+    if(answer != NULL){
+        PC.print(answer);
+        PC.write(TERMINATOR);
+        return 0;
+    }else{
+        PC.write(ERROR_INDICATOR);
+        PC.write(TERMINATOR);
+        return -1;
+    }     
+}
+
 int H_get_handler(char option, int variable = 1){
     const char* answer = get_helper(option,variable);
     if(answer != NULL){
@@ -72,6 +109,8 @@ int H_get_handler(char option, int variable = 1){
         return -1;
     }   
 }
+
+
 
 int H_get_wd_freq(char input){
     return H_get_handler('4');
@@ -98,6 +137,45 @@ int H_get_at105(char input){
     return H_get_handler('0',2);
 }
 
+// TODO: que si no recibe pronto ], considera que fue error!
+int H_set_finished_handler(void){
+    bool answer = set_helper(setting_menu_selected, setting_command,setting_array);
+    if(answer){
+        //PC.print("RECIVED TRUE\n");
+        PC.print(OK_INDICATOR);
+        PC.write(TERMINATOR);
+        return 0;
+    }else{
+        //PC.print("RECIVED FALSE\n");
+        PC.write(ERROR_INDICATOR);
+        PC.write(TERMINATOR);
+        return -1;
+    }   
+}
+
+int H_set_init_handler(char command, int setting_menu){
+    setting = true;
+    setting_index = 0;
+    setting_array[setting_index] = 0;
+    setting_command = command;
+    setting_menu_selected = setting_menu;
+    return 0;
+}
+
+int H_set_wd_freq(char input){
+    return H_set_init_handler('4',SET_MENU);
+}
+int H_set_temp_freq(char input){
+    return H_set_init_handler('5',SET_MENU);
+}
+int H_set_calibrated_min(char input){
+    return H_set_init_handler('6',SET_MENU);
+}
+int H_set_penguin_name(char input){
+    return H_set_init_handler('N',DEBUG_MENU);
+}
+
+
 PCinputHandler* input_handlers[128] = { // RETURN 0 = OK; -1 = NOT OK!
 //  [NUL]                   [STX]                   [SOT]                   [ETX]                   [EOT]                   [ENQ]                   [ACK]                   [BEL] 
     &H_unknown_input,       &H_unknown_input,       &H_unknown_input,       &H_unknown_input,       &H_unknown_input,       &H_unknown_input,       &H_unknown_input,       &H_unknown_input,
@@ -116,19 +194,19 @@ PCinputHandler* input_handlers[128] = { // RETURN 0 = OK; -1 = NOT OK!
 //  8                       9                       :                       ;                       <                       =                       >                       ?
     &H_unknown_input,       &H_unknown_input,       &H_unknown_input,       &H_unknown_input,       &H_unknown_input,       &H_unknown_input,       &H_unknown_input,       &H_unknown_input,
 //  @                       A                       B                       C                       D                       E                       F                       G
-    &H_unknown_input,       &H_get_activ_time,      &H_unknown_input,       &H_get_calibrated_min,  &H_unknown_input,       &H_unknown_input,       &H_get_FSM_state,       &H_unknown_input,
+    &H_unknown_input,       &H_get_activ_time,      &H_unknown_input,       &H_get_calibrated_min,  &H_unknown_input,       &H_get_last_events,     &H_get_FSM_state,       &H_unknown_input,
 //  H                       I                       J                       K                       L                       M                       N                       O
     &H_unknown_input,       &H_get_logger_ID,       &H_unknown_input,       &H_unknown_input,       &H_toggle_led,          &H_unknown_input,       &H_get_penguin_name,    &H_unknown_input,
 //  P                       Q                       R                       S                       T                       U                       V                       W
     &H_unknown_input,       &H_unknown_input,       &H_unknown_input,       &H_unknown_input,       &H_get_temp_freq,       &H_unknown_input,       &H_unknown_input,       &H_get_wd_freq,
 //  X                       Y                       Z                       [                       \                       ]                       ^                       _
-    &H_unknown_input,       &H_unknown_input,       &H_unknown_input,       &H_unknown_input,       &H_unknown_input,       &H_unknown_input,       &H_unknown_input,       &H_unknown_input,
+    &H_get_indexes,         &H_unknown_input,       &H_unknown_input,       &H_unknown_input,       &H_unknown_input,       &H_unknown_input,       &H_unknown_input,       &H_unknown_input,
 //  `                       a                       b                       c                       d                       e                       f                       g
-    &H_unknown_input,       &H_unknown_input,       &H_unknown_input,       &H_unknown_input,       &H_unknown_input,       &H_unknown_input,       &H_unknown_input,       &H_unknown_input,
+    &H_unknown_input,       &H_unknown_input,       &H_unknown_input,       &H_set_calibrated_min,  &H_unknown_input,       &H_unknown_input,       &H_unknown_input,       &H_unknown_input,
 //  h                       i                       j                       k                       l                       m                       n                       o
-    &H_unknown_input,       &H_unknown_input,       &H_unknown_input,       &H_unknown_input,       &H_unknown_input,       &H_unknown_input,       &H_unknown_input,       &H_unknown_input,
+    &H_unknown_input,       &H_unknown_input,       &H_unknown_input,       &H_unknown_input,       &H_unknown_input,       &H_unknown_input,       &H_set_penguin_name,    &H_unknown_input,
 //  p                       q                       r                       s                       t                       u                       v                       w
-    &H_unknown_input,       &H_unknown_input,       &H_unknown_input,       &H_unknown_input,       &H_unknown_input,       &H_unknown_input,       &H_unknown_input,       &H_unknown_input,
+    &H_unknown_input,       &H_unknown_input,       &H_unknown_input,       &H_unknown_input,       &H_set_temp_freq,       &H_unknown_input,       &H_unknown_input,       &H_set_wd_freq,
 //  x                       y                       z                       {                       |                       }                       ~                       [DEL]
     &H_unknown_input,       &H_unknown_input,       &H_unknown_input,       &H_unknown_input,       &H_unknown_input,       &H_unknown_input,       &H_activate_master,     &H_unknown_input,
 };
@@ -148,6 +226,7 @@ void setup() {
     change_led_color(BASE_POWER_ON);
 
     master_control = false;
+    setting = false;
     //test_millis();
 }
 
@@ -220,6 +299,7 @@ void loop(){
             answer_from_msp_received = receive_answer_from_msp();
             if(answer_from_msp_received && get_current_menu() == DEBUG_MENU){
                 change_led_color(CONNECTED);
+                setting = false;
                 connected = true;
             }else{
                 DISABLE_TX;
@@ -269,8 +349,33 @@ void loop(){
                     byte_from_pc = PC.read();
 
                     if(!master_control){
-                        if(byte_from_pc >= 0 && byte_from_pc < 128){
-                            (*input_handlers[byte_from_pc])(byte_from_pc);
+                        if(!setting){
+                            if(byte_from_pc >= 0 && byte_from_pc < 128){
+                                (*input_handlers[byte_from_pc])(byte_from_pc); // DO SOMETHING WITH -1!!!
+                            }
+                        }else{
+                            if(byte_from_pc == SETTING_INPUT_FINISHED){
+                                PC.print("SETTING FINISHED, COMMAND = ");
+                                PC.write(setting_command);
+                                PC.print(" AT MENU ");
+                                PC.print(setting_menu_selected);
+                                PC.print("\nSETTING STRING = ");
+                                PC.print(setting_array);
+                                PC.print("\n");
+                                H_set_finished_handler(); // DO SOMETHING WITH -1!!!
+                                setting = false;
+                            }else{
+                                if(setting_index < 255){
+                                    setting_array[setting_index++] =  byte_from_pc;
+                                    setting_array[setting_index] = 0;
+                                }
+
+                                PC.print("SETTING, RECEIVED = ");
+                                PC.write(byte_from_pc);
+                                PC.print("\n");
+                            }
+                            
+
                         }
                     }else{
                         if (byte_from_pc == MASTER_CONTROL_COMMAND){

@@ -60,6 +60,265 @@ const char* toggle_led(void){
 
 }
 
+int char_pointer_content_to_int(const char* pointer){
+    int answer = 0;
+    bool negative = false;
+    const char* current_pointer = pointer;
+
+    if(*pointer == '-'){
+        negative = true;
+        pointer++;
+    }else if (*pointer == '+'){
+        negative = false;
+        pointer++;
+    }
+    while(*pointer >= '0' && *pointer <= '9'){
+        answer *= 10;
+        answer += *pointer-'0';
+        pointer++;
+    }
+    if (negative){
+        answer *= -1;
+    }
+    return answer;
+}
+
+bool get_last_events(void){
+    bool received = false;
+
+    const char* last_event_index_pointer = NULL;
+    int last_event_index = 0;
+    const char* looping_events_value_pointer = NULL;
+    bool looping_events = false;
+    
+    const char* last_event_pointer = NULL;
+    const char* beggining_of_list_pointer = NULL;
+    const char* ending_of_list_pointer = NULL;
+    const char* printing_pointer = NULL;
+    int i = 0;
+
+    if (get_current_menu() != DEBUG_MENU){
+        try_to_go_back();
+        return false;
+    }
+    send_command_to_msp('>');
+    received = receive_answer_from_msp();
+    if (get_current_menu() != USER_MENU){
+        try_to_go_back();
+        return false;
+    }    
+    send_command_to_msp('E');
+    received = receive_answer_from_msp();    
+    if (get_current_menu() != USER_MENU){
+        try_to_go_back();
+        return false;
+    }    
+    // PRINTEAR LO QUE ME IMPORTE!!!
+
+    last_event_index_pointer = strstr(input_buffer, "=");
+    if(last_event_index_pointer == NULL){
+        try_to_go_back();
+        return false;    
+    }
+    last_event_index_pointer = last_event_index_pointer+2;
+
+    looping_events_value_pointer = strstr(last_event_index_pointer, "=");
+    if(looping_events_value_pointer == NULL){
+        try_to_go_back();
+        return false;    
+    }
+    looping_events_value_pointer = looping_events_value_pointer+2;
+
+    beggining_of_list_pointer = strstr(looping_events_value_pointer,"\n");
+    if(beggining_of_list_pointer == NULL){
+        try_to_go_back();
+        return false;    
+    }    
+    beggining_of_list_pointer = beggining_of_list_pointer+1;
+
+    ending_of_list_pointer = strstr(beggining_of_list_pointer,"\n\n");
+    if(ending_of_list_pointer == NULL){
+        try_to_go_back();
+        return false;    
+    }    
+    ending_of_list_pointer = ending_of_list_pointer+1;
+
+    // GET LAST_EVENT_INDEX!!!
+    last_event_index = char_pointer_content_to_int(last_event_index_pointer);
+    last_event_pointer = beggining_of_list_pointer;
+    for(i=0; i<last_event_index && i<99;i++){
+        last_event_pointer = strstr(last_event_pointer,"\n");
+        if(last_event_pointer == NULL){
+            try_to_go_back();
+            return false;    
+        }
+        last_event_pointer = last_event_pointer+1;
+    }
+
+    looping_events = *looping_events_value_pointer == 'T';
+    
+    //PC.print("LAST EVENT INDEX = ");
+    //PC.print(last_event_index);
+    //PC.print("\nLOOPING = ");
+    //PC.print((int)looping_events);
+    //PC.print("\n");
+
+    if(!looping_events){
+        for(printing_pointer = beggining_of_list_pointer; printing_pointer<last_event_pointer; printing_pointer++){
+            PC.write(*printing_pointer);
+        }
+    }else{
+        printing_pointer = last_event_pointer;
+        do{
+            PC.write(*printing_pointer);
+            printing_pointer++;
+            if(printing_pointer == ending_of_list_pointer){
+                printing_pointer = beggining_of_list_pointer;
+            }
+        }while(printing_pointer != last_event_pointer);
+        
+    }
+
+
+
+
+    // OJO! SI OCURRE ERROR LUEGO DE ESO, IGUAL PC RECIBE EVENTOS!!!
+    send_command_to_msp('<');
+    received = receive_answer_from_msp();
+    if (get_current_menu() != DEBUG_MENU){
+        try_to_go_back();
+        return false;
+    }     
+    return true;
+}
+
+bool set_helper(int menu, char command, const char* input){
+    bool received = false;
+    int i = 0;
+
+    if (get_current_menu() != DEBUG_MENU){
+        try_to_go_back();
+        return false;
+    }
+
+    if(menu == DEBUG_MENU){
+        send_command_to_msp(command);
+        received = receive_answer_from_msp();
+        if(!received){
+            try_to_go_back();
+            return false;
+        }
+        while(received && i<255 && input[i] != '\0'){
+            send_command_to_msp(input[i++]);
+            received = receive_answer_from_msp();
+        }
+        if(!received){
+            try_to_go_back();
+            return false;
+        }
+        send_command_to_msp('>');
+        received = receive_answer_from_msp();
+        if(!received || get_current_menu() != DEBUG_MENU){
+            try_to_go_back();
+            return false;
+        }
+        return true;
+    }else if(menu == SET_MENU){
+        send_command_to_msp('S');
+        received = receive_answer_from_msp();
+        if(!received || get_current_menu() != SET_MENU){
+            try_to_go_back();
+            return false;
+        }
+        while(received && i<255 && input[i] != '\0'){
+            send_command_to_msp(input[i++]);
+            received = receive_answer_from_msp();
+        }
+        if(!received){
+            try_to_go_back();
+            return false;
+        }
+        send_command_to_msp('>');
+        received = receive_answer_from_msp();        
+        if(!received || get_current_menu() != SET_MENU2){
+            try_to_go_back();
+            return false;
+        }
+        send_command_to_msp(command);
+        received = receive_answer_from_msp();
+        if(!received || get_current_menu() != DEBUG_MENU){
+            try_to_go_back();
+            return false;
+        }
+        return true;
+    }
+    return false;
+}
+
+const char* get_from_user_menu_helper(int variable1, int variable2){
+    static char answer[256] = "";
+    const char* original_position = 0;
+    const char* first_variable_pointer = NULL;
+    const char* second_variable_pointer = NULL;
+    bool received = false;
+    int answer_index = 0;
+    int i;
+
+    if (get_current_menu() != DEBUG_MENU){
+        try_to_go_back();
+        return NULL;
+    }
+    send_command_to_msp('>');
+    received = receive_answer_from_msp();
+    if(! received || get_current_menu() != USER_MENU){
+        try_to_go_back();
+        return NULL; 
+    }   
+    original_position = input_buffer;
+    for (i=0; i<variable1 || i<variable2;i++){
+        original_position = strstr(original_position," = ");
+        if(original_position == NULL || original_position> ((const char*)input_buffer+INPUT_BUFFER_SIZE-4)){
+            try_to_go_back();
+            return NULL;
+        }
+        original_position = original_position + 3;
+        if(i == variable1-1){
+            first_variable_pointer = original_position;
+        }
+        if(i == variable2-1){
+            second_variable_pointer = original_position;
+        }
+    }
+
+    if(first_variable_pointer == NULL || (variable2 != 0 && second_variable_pointer ==NULL)){
+        try_to_go_back();
+        return NULL;
+    }
+
+    while(*first_variable_pointer != '\0' && *first_variable_pointer != '\n' && answer_index < 255 && first_variable_pointer < ((const char*)input_buffer+INPUT_BUFFER_SIZE)){
+        answer[answer_index++] = *first_variable_pointer;
+        first_variable_pointer++;
+    }
+    if(variable2 != 0){
+        answer[answer_index++] = '\t';
+        while(*second_variable_pointer != '\0' && *second_variable_pointer != '\n' && answer_index < 255 && second_variable_pointer < ((const char*)input_buffer+INPUT_BUFFER_SIZE)){
+            answer[answer_index++] = *second_variable_pointer;
+            second_variable_pointer++;
+        }
+    }
+    answer[answer_index] = 0;
+    answer[255] = 0;
+
+    send_command_to_msp('<');
+    received = receive_answer_from_msp();
+    if(! received || get_current_menu() != DEBUG_MENU){
+        try_to_go_back();
+        return NULL; 
+    }   
+
+    return answer;
+}
+
 const char* get_helper(char option, int variable){
     static char answer[256] = "";
     const char* original_position = 0;
@@ -342,7 +601,7 @@ void print_input_buffer(bool long_data){
     }
 
     while(printing_index < input_buffer_index){
-        if(input_buffer[printing_index]<0x0A || (input_buffer[printing_index]>0x0A && input_buffer[printing_index]<0x20)){
+        if(input_buffer[printing_index]<0x20 && input_buffer[printing_index]!= '\n' && input_buffer[printing_index]!= '\t'){
             PC.print("0x");
             PC.print((int)input_buffer[printing_index]);
         }else{
@@ -351,197 +610,3 @@ void print_input_buffer(bool long_data){
         printing_index++;
     }
 }
-/*
-
-void wait_until_character_and_discard(char character, unsigned int times = 1){
-    unsigned int i = 0;
-    for(i = 0; i < times; i++){
-        while((char)MSP.read() != character);
-    }
-}
-
-void get_operating_mode(void){
-    char aux[30] = "";
-    unsigned int index = 0;
-
-    char byte_from_msp;
-
-    index = 0;
-    change_led_color(PROCESSING);
-    MSP.write(">");
-
-    wait_until_character_and_discard('\n');
-    wait_until_character_and_discard('=');
-    MSP.read();
-    
-
-    
-    do{
-        byte_from_msp = (char) MSP.read();
-        if(byte_from_msp >= 0x20 && byte_from_msp < 0x7F){
-            aux[index] = byte_from_msp;
-            index++;
-        }
-    }while(byte_from_msp != '\n');
-
-    if(aux[0] == 'I'){
-        PC.write(OPERATING_MODE__INACTIVE);
-    }else if (aux[0] == 'T'){
-        PC.write(OPERATING_MODE__TEMPERATURE);
-    }else if (aux[12] == 'O'){
-        PC.write(OPERATING_MODE__WET_AND_DRY);
-    }else{
-        PC.write(OPERATING_MODE__BOTH);
-    }
-    PC.write('\n');
-    PC.flush();
-
-    // TODO: INVALID STATE!!!
-    // TODO: mandar info a PC DESPUES de dejar MSP en DEBUG MENU ???
-
-    MSP.write("<");
-    wait_until_character_and_discard('*',25);
-
-    change_led_color(CONNECTED);
-}
-
-void get_indexes(void){
-    char aux[10] = "";
-    unsigned int index = 0;
-    char byte_from_msp;
-    unsigned int i;
-    change_led_color(PROCESSING);
-    MSP.write(">");
-
-    wait_until_character_and_discard('\n',9);
-    wait_until_character_and_discard('=');
-    wait_until_character_and_discard(' ');
-
-    index = 0;
-    do{
-        byte_from_msp = (char) MSP.read();
-        if(byte_from_msp >= 0x20 && byte_from_msp < 0x7F){
-            aux[index] = byte_from_msp;
-            index++;
-            //PC.print(byte_from_msp);
-        }
-    }while(byte_from_msp != '\n');
-    aux[index] = '\0';
-    wait_until_character_and_discard('\n');
-    wait_until_character_and_discard('=');
-    wait_until_character_and_discard(' ');
-    
-    do{
-        byte_from_msp = (char) MSP.read();
-        if(byte_from_msp >= 0x20 && byte_from_msp < 0x7F){
-            PC.print(byte_from_msp);
-        }
-    }while(byte_from_msp != '\n');
-    PC.print('\n');
-    PC.print(aux);
-    PC.print('\n');
-    PC.flush();
-
-    MSP.write("<");
-    wait_until_character_and_discard('*',25);
-    
-    change_led_color(CONNECTED);
-}
-
-void get_calibration_C(bool atC){
-    char byte_from_msp;
-
-    change_led_color(PROCESSING);
-    MSP.write("G");
-    wait_until_character_and_discard('*',25);
-    MSP.write("0");
-    wait_until_character_and_discard('\n');
-    if(atC){
-        wait_until_character_and_discard('\n',2);
-    }
-    wait_until_character_and_discard('=');
-    wait_until_character_and_discard(' ');
-    do{
-        byte_from_msp = (char) MSP.read();
-        if(byte_from_msp >= 0x20 && byte_from_msp < 0x7F){
-            PC.print(byte_from_msp);
-        }
-        
-    }while(byte_from_msp != '\n');
-    PC.print('\n');
-    PC.flush();
-
-    wait_until_character_and_discard('*',25);
-    
-    change_led_color(CONNECTED);
-}
-
-void toggle_led(){
-    char byte_from_msp;
-
-    change_led_color(PROCESSING);
-    MSP.write("L");
-    wait_until_character_and_discard('\n');
-    wait_until_character_and_discard(' ');
-    do{
-        byte_from_msp = (char) MSP.read();
-        if(byte_from_msp >= 0x20 && byte_from_msp < 0x7F){
-            PC.print(byte_from_msp);
-        }
-        
-    }while(byte_from_msp != '\n');
-    PC.print('\n');
-    PC.flush();
-
-    wait_until_character_and_discard('*',25);
-    
-    change_led_color(CONNECTED);
-}
-
-void get_helper_function(char option){
-    char byte_from_msp;
-
-    change_led_color(PROCESSING);
-    MSP.write("G");
-    wait_until_character_and_discard('*',25);
-    MSP.write(option);
-    wait_until_character_and_discard('\n');
-    wait_until_character_and_discard('=');
-    wait_until_character_and_discard(' ');
-    do{
-        byte_from_msp = (char) MSP.read();
-        if(byte_from_msp >= 0x20 && byte_from_msp < 0x7F){
-            PC.print(byte_from_msp);
-        }
-        
-    }while(byte_from_msp != '\n');
-    PC.print('\n');
-    PC.flush();
-
-    wait_until_character_and_discard('*',25);
-
-    change_led_color(CONNECTED);
-}
-
-void set_helper_function(char option){
-    char input_from_base = '0';
-    change_led_color(PROCESSING);
-    MSP.write("S");
-    wait_until_character_and_discard('*',25);
-    do{
-        MSP.write((char) input_from_base);
-        input_from_base = PC.read();
-    }while(input_from_base != '\n');
-
-    while((char) MSP.read() != '*');
-    MSP.write(">");
-    delay(100);
-    while((char) MSP.read() != '*');
-    
-    while(1){
-        //WIP
-    }
-
-}
-
-*/

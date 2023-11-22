@@ -59,6 +59,11 @@ void print_input_buffer(bool long_data = false);
 //      OUTPUT:
 //  Pointer to answer string. If error, output = NULL
 const char* get_helper(char option, int variable = 1);
+const char* get_from_user_menu_helper(int variable1, int variable2 = 0);
 const char* toggle_led(void);
+//      OUTPUT:
+//  0 = error; 1 = valid
+bool set_helper(int menu, char command, const char* input);
+bool get_last_events(void);
 
 #endif
