@@ -10,3 +10,9 @@
   }while(MSP.available());
 }*/
 
+
+
+// TODO:
+// MODIFICAR PIN DE ENABLE TX!!!
+// testear con TODOS los numeros posibles para el tracking_buffer
+// Hacer un modo "experto" donde se puedan ingresar a mano los comandos

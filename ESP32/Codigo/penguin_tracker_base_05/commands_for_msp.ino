@@ -2,7 +2,6 @@
 
 #define INPUT_BUFFER_SIZE 5000
 #define TRACKING_BUFFER_SIZE 28000
-//50000
 #define ASTERISK_STRING_SIZE 25
 
 static char input_buffer[INPUT_BUFFER_SIZE] = "";
@@ -15,9 +14,124 @@ static char tracking_single_buffer[4] = "";
 
 static char const start_of_tracking_data_string[3] = {0x06,0xA,0xA};
 
-static void send_command_to_msp(char command);
-static int receive_answer_from_msp(int time_out = 500, bool long_data = false);  // TODO: separar entre "tiempo hasta terminar mensaje" y "tiempo sin recivir nada". No olvida posibilidad de ruido!!!
-static void print_input_buffer(bool long_data = false);
+static void try_to_go_back(void){
+    bool received = false;
+    send_command_to_msp('<');
+    received = receive_answer_from_msp();
+    send_command_to_msp('<');
+    received = receive_answer_from_msp();
+}
+
+const char* toggle_led(void){
+    static char answer[4] = "";
+    const char* original_position = 0;
+    bool received = false;
+    int answer_index = 0;
+
+    if (get_current_menu() != DEBUG_MENU){
+        //PC.print("ERROR D\n");
+        try_to_go_back();
+        return NULL;
+    }
+    send_command_to_msp('L');
+    received = receive_answer_from_msp();    
+    if(! received || get_current_menu() != DEBUG_MENU){
+        try_to_go_back();
+        return NULL; 
+    }
+    original_position = input_buffer;
+    original_position = strstr(original_position,"LED");
+    if(original_position == NULL || original_position> ((const char*)input_buffer+INPUT_BUFFER_SIZE-8)){
+        try_to_go_back();
+        //PC.print("ERROR C\n");
+        return NULL;
+    }
+    original_position = original_position+4;
+
+    
+    while(*original_position != '\0' && *original_position != '\n' && answer_index < 3 && original_position < ((const char*)input_buffer+INPUT_BUFFER_SIZE)){
+        answer[answer_index++] = *original_position;
+        original_position++;
+    }
+
+    answer[answer_index] = 0;
+    answer[3] = 0;
+    return answer;
+
+}
+
+const char* get_helper(char option, int variable){
+    static char answer[256] = "";
+    const char* original_position = 0;
+    bool received = false;
+    int answer_index = 0;
+    int i;
+    
+    if (get_current_menu() != DEBUG_MENU){
+        //PC.print("ERROR D\n");
+        try_to_go_back();
+        return NULL;
+    }
+    send_command_to_msp('G');
+    received = receive_answer_from_msp();
+    if(! received || get_current_menu() != GET_MENU){
+        try_to_go_back();
+        return NULL; 
+    }
+    send_command_to_msp(option);
+    received = receive_answer_from_msp();
+    if(! received || get_current_menu() != DEBUG_MENU){
+        try_to_go_back();
+        //PC.print("ERROR B\n");
+        return NULL;
+        
+    }
+    original_position = input_buffer;
+    for (i=0; i<variable;i++){
+        original_position = strstr(original_position,"=");
+        if(original_position == NULL || original_position> ((const char*)input_buffer+INPUT_BUFFER_SIZE-4)){
+            try_to_go_back();
+            //PC.print("ERROR C\n");
+            return NULL;
+        }
+        original_position = original_position + 2;
+    }
+    while(*original_position != '\0' && *original_position != '\n' && answer_index < 255 && original_position < ((const char*)input_buffer+INPUT_BUFFER_SIZE)){
+        answer[answer_index++] = *original_position;
+        original_position++;
+    }
+    answer[answer_index] = 0;
+    answer[255] = 0;
+    return answer;
+}
+
+
+// NOTE: use receive_answer_from_msp at least once before
+int get_current_menu(void){
+    //print_input_buffer();
+    if (strstr(input_buffer,"\nDEBUG MENU\n") != NULL)
+        return DEBUG_MENU;
+    if (strstr(input_buffer,"\nGETTING...\n") != NULL)
+        return GET_MENU;
+    if (strstr(input_buffer,"\nSETTING...\n\n0") != NULL)
+        return SET_MENU;    
+    if (strstr(input_buffer,"\nSETTING...\n\n1") != NULL)
+        return SET_MENU2;   
+    if (strstr(input_buffer,"\nCHANGING NAME...\n") != NULL)
+        return NAME_MENU;      
+    if (strstr(input_buffer,"\nUSER MENU\n") != NULL)
+        return USER_MENU;   
+    if (strstr(input_buffer,"\nENTER PASSWORD\n") != NULL)
+        return PASSWORD_SCREEN;   
+    if (strstr(input_buffer,"\nINSERT DATE\n") != NULL)
+        return DATE_MENU;
+    if (strstr(input_buffer,"\nSELECT NEW STATE AND QUIT\n") != NULL)
+        return NEW_STATE_MENU;
+    return UNKNOWN_MENU;
+
+}
+
+
 
 static bool convert_tracking_number(int tracking_buffer_index){
     bool valid_data = true;
@@ -85,11 +199,11 @@ void send_and_print_received(char sending, bool long_data, int time_out){
 
 /////////////////////////////////////////////////////
 
-static void send_command_to_msp(char command){
+void send_command_to_msp(char command){
     MSP.print(command);
 }
 
-static int receive_answer_from_msp(int time_out, bool long_data){
+int receive_answer_from_msp(int time_out, bool long_data){
     int starting_time = millis();
     int time_out_time = starting_time + time_out;
     bool message_received = false;
@@ -173,10 +287,12 @@ static int receive_answer_from_msp(int time_out, bool long_data){
 
     }
 
-    while(!message_received && millis() < time_out_time && input_buffer_index < INPUT_BUFFER_SIZE){
+    while(!message_received && millis() < time_out_time && input_buffer_index < INPUT_BUFFER_SIZE-1){
         if(MSP.sent_bytes()){
             input_from_MSP  = MSP.read();
-            input_buffer[input_buffer_index++] = (char) input_from_MSP;
+            if(input_from_MSP != '\0'){
+                input_buffer[input_buffer_index++] = (char) input_from_MSP;
+            }
             if(input_from_MSP == '*'){
                 --remaining_asterisks;
             }
@@ -189,11 +305,17 @@ static int receive_answer_from_msp(int time_out, bool long_data){
             }
         }
     }
+    if(input_buffer_index < INPUT_BUFFER_SIZE){
+        input_buffer[input_buffer_index] = 0;
+    }
+    input_buffer[INPUT_BUFFER_SIZE-1] = 0;
+
+
     input_buffer_time = millis()-starting_time;
     return message_received && (tracking_buffer_valid || !long_data);
 }
 
-static void print_input_buffer(bool long_data){
+void print_input_buffer(bool long_data){
     int printing_index = 0;
     int tracking_index = 0;
     int last_time = millis();
@@ -220,10 +342,16 @@ static void print_input_buffer(bool long_data){
     }
 
     while(printing_index < input_buffer_index){
-        PC.print(input_buffer[printing_index++]);
+        if(input_buffer[printing_index]<0x0A || (input_buffer[printing_index]>0x0A && input_buffer[printing_index]<0x20)){
+            PC.print("0x");
+            PC.print((int)input_buffer[printing_index]);
+        }else{
+            PC.print(input_buffer[printing_index]);
+        }
+        printing_index++;
     }
 }
-
+/*
 
 void wait_until_character_and_discard(char character, unsigned int times = 1){
     unsigned int i = 0;
@@ -415,3 +543,5 @@ void set_helper_function(char option){
     }
 
 }
+
+*/

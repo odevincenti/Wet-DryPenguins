@@ -53,7 +53,7 @@ void test_buffer(void){
     }
 
 }
-
+/*
 void test_times(void){
     unsigned int operations[1000] = {0};
     unsigned int index=0;
@@ -81,3 +81,4 @@ void test_times(void){
     }
     
 }
+*/
