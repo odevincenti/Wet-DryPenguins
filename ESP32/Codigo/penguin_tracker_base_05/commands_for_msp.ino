@@ -13,6 +13,7 @@ static bool tracking_buffer_valid = false;
 static char tracking_single_buffer[4] = "";
 
 static char const start_of_tracking_data_string[3] = {0x06,0xA,0xA};
+static char const ending_message[15] = "\x06\nBye bye!\nOK\n";
 
 static void try_to_go_back(void){
     bool received = false;
@@ -20,7 +21,78 @@ static void try_to_go_back(void){
     received = receive_answer_from_msp();
     send_command_to_msp('<');
     received = receive_answer_from_msp();
+    send_command_to_msp('<');
+    received = receive_answer_from_msp();
 }
+
+const char password[] = "Noot noot!";
+
+bool quit_helper(char operating_mode, const char* activation_time){
+    bool received = false;
+    int i = 0;
+    const char* atime_index = activation_time;
+    if (get_current_menu() != DEBUG_MENU){
+        try_to_go_back();
+        return false;
+    }
+    send_command_to_msp('>');
+    received = receive_answer_from_msp();      
+    if (!received && get_current_menu() != USER_MENU){
+        try_to_go_back();
+        return false;
+    }
+    send_command_to_msp('>');
+    received = receive_answer_from_msp();
+    if (!received && get_current_menu() != PASSWORD_SCREEN){
+        try_to_go_back();
+        return false;
+    }
+
+    while(passowrd[i] != '!'){
+        send_command_to_msp(password[i]);
+        received = receive_answer_from_msp();
+        if (!received && get_current_menu() != PASSWORD_SCREEN){
+            try_to_go_back();
+            return false;
+        }   
+        i++;
+    }
+    send_command_to_msp(password[i]);
+    received = receive_answer_from_msp();
+    if (!received && get_current_menu() != DATE_MENU){
+        try_to_go_back();
+        return false;
+    } 
+
+    while(*atime_index != '\0'){
+        send_command_to_msp(*atime_index);
+        received = receive_answer_from_msp();
+        if (!received && get_current_menu() != DATE_MENU){
+            try_to_go_back();
+            return false;
+        }
+    }
+    send_command_to_msp('>');
+    received = receive_answer_from_msp();
+    if (!received && get_current_menu() != NEW_STATE_MENU){
+        try_to_go_back();
+        return false;
+    }
+
+
+    send_command_to_msp((char)(operating_mode+1));
+    received = receive_last_message();
+    if(!received){
+        try_to_go_back();
+        return false;        
+    }
+
+    return true;
+
+
+}
+
+
 
 const char* toggle_led(void){
     static char answer[4] = "";
@@ -460,6 +532,64 @@ void send_and_print_received(char sending, bool long_data, int time_out){
 
 void send_command_to_msp(char command){
     MSP.print(command);
+}
+
+int receive_last_message(int time_out){
+    int starting_time = millis();    
+    int time_out_time = starting_time + time_out;
+    //bool message_received = false;
+    int input_from_MSP = 0;
+    bool valid_message = true;
+
+    input_buffer_index = 0;
+    while(valid_message && millis() < time_out_time && input_buffer_index < INPUT_BUFFER_SIZE-1 && input_buffer_index < sizeof(ending_message)/sizeof(ending_message[0])-1){
+        if(MSP.sent_bytes()){
+            input_from_MSP = MSP.read();
+            if(input_from_MSP != ending_message[input_buffer_index]){
+                valid_message = false;
+            }
+            if(input_from_MSP != '\0'){
+                intput_buffer[input_buffer_index++] = (char) input_from_MSP;
+            }
+        }   
+    }
+    if(input_buffer_index < INPUT_BUFFER_SIZE){
+        input_buffer[input_buffer_index] = 0;
+    }
+    input_buffer[INPUT_BUFFER_SIZE-1] = 0;
+    
+
+    input_buffer_time = millis()-starting_time;
+    return valid_message &&  (input_buffer_index == sizeof(ending_message)/sizeof(ending_message[0])-1);
+
+/*
+    while(!message_received && millis() < time_out_time && input_buffer_index < INPUT_BUFFER_SIZE-1){
+        if(MSP.sent_bytes()){
+            input_from_MSP  = MSP.read();
+            if(input_from_MSP != '\0'){
+                input_buffer[input_buffer_index++] = (char) input_from_MSP;
+            }
+            if(input_from_MSP == '*'){
+                --remaining_asterisks;
+            }
+            if(input_from_MSP == '\n'){
+                if(remaining_asterisks){
+                    remaining_asterisks = ASTERISK_STRING_SIZE;
+                }else{
+                    message_received = true;
+                }
+            }
+        }
+    }
+    if(input_buffer_index < INPUT_BUFFER_SIZE){
+        input_buffer[input_buffer_index] = 0;
+    }
+    input_buffer[INPUT_BUFFER_SIZE-1] = 0;
+
+
+    input_buffer_time = millis()-starting_time;
+    return message_received && (tracking_buffer_valid || !long_data);   
+*/
 }
 
 int receive_answer_from_msp(int time_out, bool long_data){

@@ -46,6 +46,7 @@ void send_command_to_msp(char command);
 //  0 = data not valid
 //  1 = data valid, message received
 int receive_answer_from_msp(int time_out = 2000, bool long_data = false);  // TODO: separar entre "tiempo hasta terminar mensaje" y "tiempo sin recivir nada". No olvida posibilidad de ruido!!!
+int receive_last_message(int time_out = 2000);
 
 //  print_input_buffer
 //      FUNCTION:
@@ -65,5 +66,6 @@ const char* toggle_led(void);
 //  0 = error; 1 = valid
 bool set_helper(int menu, char command, const char* input);
 bool get_last_events(void);
+bool quit_helper(char operating_mode, const char* activation_time);
 
 #endif
