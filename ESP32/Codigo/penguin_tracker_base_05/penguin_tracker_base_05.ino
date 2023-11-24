@@ -17,6 +17,10 @@
 #define ENABLE_TX     digitalWrite(PIN_TX_ENABLE,LOW)
 #define DISABLE_TX    digitalWrite(PIN_TX_ENABLE,HIGH)
 
+
+#define IGNORE_FIRST_MOMENTS true
+
+
 bool master_control = false;
 bool operating_mode_set = false;
 char new_operating_mode = 0; 
@@ -115,7 +119,7 @@ bool compare_strings(const char* substring, const char* main_string){
 
 int H_set_operating_mode1(char input){
     setting_operating_mode = true;
-    PC.print("SET OPERATING MODE PART 1\n");
+    //PC.print("SET OPERATING MODE PART 1\n");
     return 0;
 }
 
@@ -130,7 +134,7 @@ int H_set_operating_mode2(char input){
         new_operating_mode = input;
     }
     
-    PC.print("SET OPERATING MODE PART 2\n");
+    //PC.print("SET OPERATING MODE PART 2\n");
     PC.print(OK_INDICATOR);
     PC.write(TERMINATOR);
 
@@ -280,14 +284,30 @@ int H_set_penguin_name(char input){
 }
 
 int H_quit_handler(char operating_mode){
-    
+    bool answer = false;
+    if (activation_time_set){
+        answer = quit_helper(operating_mode, activation_time_array);
+    }
+    else{
+        answer = quit_helper(operating_mode, "");
+    }
+    if(answer){
+        PC.print(OK_INDICATOR);
+        PC.write(TERMINATOR);
+        return 1;
+    }else{
+        PC.write(ERROR_INDICATOR);
+        PC.write(TERMINATOR);
+        return -1;        
+    }
 }
+   
 
 int H_activate_logger(char input){
-    return 0;
+    return H_quit_handler(operating_mode_to_set);
 }
 int H_deactivate_logger(char input){
-    return 0;
+    return H_quit_handler(OPERATING_MODE__INACTIVE);
 }
 
 
@@ -365,6 +385,10 @@ int enable_base_detect(void){
     char byte_from_msp = 0;
     //change_led_color(CONNECTING);
     ENABLE_5V;
+    if(IGNORE_FIRST_MOMENTS){
+        return true;
+    }
+
     while(!connected && millis()<timeout){
         if(MSP.available()){
             byte_from_msp = MSP.read();
@@ -425,6 +449,7 @@ void loop(){
                 connected = true;
                 operating_mode_set = false;
                 activation_time_set = false;
+                operating_mode_to_set = OPERATING_MODE__INACTIVE;
                 PC.print(OK_INDICATOR);
                 PC.write(TERMINATOR);
             }else{

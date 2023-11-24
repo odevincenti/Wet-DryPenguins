@@ -31,27 +31,38 @@ bool quit_helper(char operating_mode, const char* activation_time){
     bool received = false;
     int i = 0;
     const char* atime_index = activation_time;
+
+    PC.print("QUIT HELPER WITH operating_mode = ");
+    PC.write(operating_mode);
+    PC.print(" AND ACTIVATION TIME = ");
+    PC.print(activation_time);
+    PC.print("\n");
+
     if (get_current_menu() != DEBUG_MENU){
+        PC.print("ERROR 1");
         try_to_go_back();
         return false;
     }
     send_command_to_msp('>');
     received = receive_answer_from_msp();      
     if (!received && get_current_menu() != USER_MENU){
+        PC.print("ERROR 2");
         try_to_go_back();
         return false;
     }
     send_command_to_msp('>');
     received = receive_answer_from_msp();
     if (!received && get_current_menu() != PASSWORD_SCREEN){
+        PC.print("ERROR 3");
         try_to_go_back();
         return false;
     }
 
-    while(passowrd[i] != '!'){
+    while(password[i] != '!'){
         send_command_to_msp(password[i]);
         received = receive_answer_from_msp();
         if (!received && get_current_menu() != PASSWORD_SCREEN){
+            PC.print("ERROR 4");
             try_to_go_back();
             return false;
         }   
@@ -60,6 +71,7 @@ bool quit_helper(char operating_mode, const char* activation_time){
     send_command_to_msp(password[i]);
     received = receive_answer_from_msp();
     if (!received && get_current_menu() != DATE_MENU){
+        PC.print("ERROR 5");
         try_to_go_back();
         return false;
     } 
@@ -68,6 +80,7 @@ bool quit_helper(char operating_mode, const char* activation_time){
         send_command_to_msp(*atime_index);
         received = receive_answer_from_msp();
         if (!received && get_current_menu() != DATE_MENU){
+            PC.print("ERROR 6");
             try_to_go_back();
             return false;
         }
@@ -75,6 +88,7 @@ bool quit_helper(char operating_mode, const char* activation_time){
     send_command_to_msp('>');
     received = receive_answer_from_msp();
     if (!received && get_current_menu() != NEW_STATE_MENU){
+        PC.print("ERROR 7");
         try_to_go_back();
         return false;
     }
@@ -83,6 +97,7 @@ bool quit_helper(char operating_mode, const char* activation_time){
     send_command_to_msp((char)(operating_mode+1));
     received = receive_last_message();
     if(!received){
+        PC.print("ERROR 8");
         try_to_go_back();
         return false;        
     }
@@ -549,7 +564,7 @@ int receive_last_message(int time_out){
                 valid_message = false;
             }
             if(input_from_MSP != '\0'){
-                intput_buffer[input_buffer_index++] = (char) input_from_MSP;
+                input_buffer[input_buffer_index++] = (char) input_from_MSP;
             }
         }   
     }
