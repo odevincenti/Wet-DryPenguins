@@ -77,7 +77,7 @@ bool quit_helper(char operating_mode, const char* activation_time){
     } 
 
     while(*atime_index != '\0'){
-        send_command_to_msp(*atime_index);
+        send_command_to_msp(*(atime_index++));
         received = receive_answer_from_msp();
         if (!received && get_current_menu() != DATE_MENU){
             PC.print("ERROR 6");

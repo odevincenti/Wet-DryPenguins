@@ -23,10 +23,7 @@
 
 bool master_control = false;
 bool operating_mode_set = false;
-char new_operating_mode = 0; 
-
-
-
+//char operating_mode_to_set = 0; 
 
 
 bool setting = false;
@@ -44,7 +41,7 @@ bool activation_time_set = false;
 
 // TODO!
 char starting_date_input[256] = "";
-int operating_mode_to_set = OPERATING_MODE__INACTIVE;
+char operating_mode_to_set = OPERATING_MODE__INACTIVE;
 
 typedef int PCinputHandler(char input);
 
@@ -127,11 +124,11 @@ int H_set_operating_mode2(char input){
     setting_operating_mode = false;
     operating_mode_set = true;
     if(input < '0'){
-        new_operating_mode ='0';
+        operating_mode_to_set ='0';
     }else if (input > '3'){
-        new_operating_mode ='3';
+        operating_mode_to_set ='3';
     }else{
-        new_operating_mode = input;
+        operating_mode_to_set = input;
     }
     
     //PC.print("SET OPERATING MODE PART 2\n");
@@ -160,12 +157,12 @@ int H_get_operating_mode(char input){
             PC.write(TERMINATOR);
             return 0;
         }else{
-            PC.write(new_operating_mode);
+            PC.write(operating_mode_to_set);
             PC.write(TERMINATOR);
             return -1;
         }     
     }else{
-        PC.write(new_operating_mode);
+        PC.write(operating_mode_to_set);
         PC.write(TERMINATOR);
         return 0;
     }

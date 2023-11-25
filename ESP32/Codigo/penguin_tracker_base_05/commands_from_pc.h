@@ -22,8 +22,8 @@
 #define SET_ACTIVATION_TIME   'a' //
 #define GET_AT_30C            '3' //
 #define GET_AT_105C           '1' //
-#define ACTIVATE_LOGGER       'Q'
-#define DEACTIVATE_LOGGER     'q'
+#define ACTIVATE_LOGGER       'Q' //
+#define DEACTIVATE_LOGGER     'q' //
 #define TOGGLE_LED            'L' //
 #define GET_DATA_FAST         'D' 
 #define GET_EVENTS            'E' //
