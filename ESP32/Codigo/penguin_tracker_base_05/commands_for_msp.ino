@@ -27,16 +27,63 @@ static void try_to_go_back(void){
 
 const char password[] = "Noot noot!";
 
+bool get_fast_data(void){
+    bool received = false;
+
+    
+    if (get_current_menu() != DEBUG_MENU){
+        PC.print("ERROR 1");
+        try_to_go_back();
+        return false;
+    }
+    send_command_to_msp('>');
+    received = receive_answer_from_msp();      
+    if (!received && get_current_menu() != USER_MENU){
+        PC.print("ERROR 2");
+        try_to_go_back();
+        return false;
+    }    
+    send_command_to_msp('F');
+    received = receive_answer_from_msp(3600000,true);
+    if (!received && get_current_menu() != USER_MENU){
+        PC.print("ERROR 3");
+        try_to_go_back();
+        return false;
+    }
+
+    if(!tracking_buffer_valid){
+        PC.print("ERROR 4");
+        try_to_go_back();
+        return false;
+    }
+    received = print_fast_data();
+    if(!received  && get_current_menu() != USER_MENU){
+        PC.print("ERROR 5");
+        try_to_go_back();
+        return false;
+    }    
+    
+    send_command_to_msp('<');
+    received = receive_answer_from_msp();
+    if (!received  &&  get_current_menu() != DEBUG_MENU){
+        PC.print("ERROR 6");
+        try_to_go_back();
+        return false;
+    }     
+    return true;
+
+}
+
 bool quit_helper(char operating_mode, const char* activation_time){
     bool received = false;
     int i = 0;
     const char* atime_index = activation_time;
 
-    PC.print("QUIT HELPER WITH operating_mode = ");
-    PC.write(operating_mode);
-    PC.print(" AND ACTIVATION TIME = ");
-    PC.print(activation_time);
-    PC.print("\n");
+    //PC.print("QUIT HELPER WITH operating_mode = ");
+    //PC.write(operating_mode);
+    //PC.print(" AND ACTIVATION TIME = ");
+    //PC.print(activation_time);
+    //PC.print("\n");
 
     if (get_current_menu() != DEBUG_MENU){
         PC.print("ERROR 1");
@@ -522,11 +569,14 @@ void keep_awake_msp(void){
 
 void send_and_print_received(char sending, bool long_data, int time_out){
     bool received = false;
+
     PC.print("\n\tSENDING: ");
     PC.print(sending);
     PC.print("\n");
+
     send_command_to_msp(sending);
     received = receive_answer_from_msp(time_out,long_data);//(4000000);
+
     if (received){
         PC.print("\tMESSAGE RECEIVED!\n");
     }else{
@@ -539,6 +589,7 @@ void send_and_print_received(char sending, bool long_data, int time_out){
     PC.print("\n\tINPUT BUFFER WRITING TIME = ");
     PC.print(input_buffer_time);
     PC.print("\n");
+
     print_input_buffer(long_data);
 
 }
@@ -577,34 +628,6 @@ int receive_last_message(int time_out){
     input_buffer_time = millis()-starting_time;
     return valid_message &&  (input_buffer_index == sizeof(ending_message)/sizeof(ending_message[0])-1);
 
-/*
-    while(!message_received && millis() < time_out_time && input_buffer_index < INPUT_BUFFER_SIZE-1){
-        if(MSP.sent_bytes()){
-            input_from_MSP  = MSP.read();
-            if(input_from_MSP != '\0'){
-                input_buffer[input_buffer_index++] = (char) input_from_MSP;
-            }
-            if(input_from_MSP == '*'){
-                --remaining_asterisks;
-            }
-            if(input_from_MSP == '\n'){
-                if(remaining_asterisks){
-                    remaining_asterisks = ASTERISK_STRING_SIZE;
-                }else{
-                    message_received = true;
-                }
-            }
-        }
-    }
-    if(input_buffer_index < INPUT_BUFFER_SIZE){
-        input_buffer[input_buffer_index] = 0;
-    }
-    input_buffer[INPUT_BUFFER_SIZE-1] = 0;
-
-
-    input_buffer_time = millis()-starting_time;
-    return message_received && (tracking_buffer_valid || !long_data);   
-*/
 }
 
 int receive_answer_from_msp(int time_out, bool long_data){
@@ -717,6 +740,30 @@ int receive_answer_from_msp(int time_out, bool long_data){
 
     input_buffer_time = millis()-starting_time;
     return message_received && (tracking_buffer_valid || !long_data);
+}
+
+
+
+bool print_fast_data(void){
+    int tracking_index = 0;
+    int last_time = millis();
+
+    for (tracking_index = 0; tracking_index<TRACKING_BUFFER_SIZE; tracking_index++){
+        PC.print((int) tracking_buffer[tracking_index]);
+        if((tracking_index & 0xF) == 0xF){
+            PC.print("\n");
+        }else{
+            PC.print("\t");
+        }
+
+        if(millis() - last_time >= 1000){
+            keep_awake_msp();
+            last_time = millis();
+        }
+
+    }
+    return tracking_buffer_valid;
+
 }
 
 void print_input_buffer(bool long_data){
