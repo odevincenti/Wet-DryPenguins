@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 from datetime import datetime
-from datetime import datetime
+import numpy as np
 import re
 
 def extract_numbers_from_txt(file_path):
@@ -14,39 +14,6 @@ def extract_numbers_from_txt(file_path):
     numbers = list(map(int, numbers))
 
     return numbers
-
-import mmap
-import re
-
-def extract_index(filepath):
-
-    # Regular expressions to find the desired lines
-    pattern_temperature = re.compile(rb'temperature_index\s*=\s*(\d+)')
-    pattern_wetdry = re.compile(rb'wet_and_dry_index\s*=\s*(\d+)')
-
-    # Open the file in read mode with mmap
-    with open(filepath, 'rb') as bin_file:
-        # Create a memory-mapped file
-        with mmap.mmap(bin_file.fileno(), 0, access=mmap.ACCESS_READ) as mapped_file:
-            # Search for wetdry_index in the mapping
-            match_wetdry = pattern_wetdry.search(mapped_file)
-            if match_wetdry:
-                # Extract the numeric value from the match
-                number_wetdry = int(match_wetdry.group(1))
-                
-                # Print the result
-                print(f"The value of wet_dry_index is: {number_wetdry}")
-
-            # Search for temperature_index in the mapping
-            match_temperature = pattern_temperature.search(mapped_file)
-            if match_temperature:
-                # Extract the numeric value from the match
-                number_temperature = int(match_temperature.group(1))
-                
-                # Print the result
-                print(f"The value of temperature_index is: {number_temperature}")
-
-    return number_wetdry, number_temperature
 
 def get_bits(byte):
     # Ensure the input is a valid byte (0 to 255)
@@ -125,18 +92,20 @@ def decode_measurements(raw_data, wet_dry_index, temp_index, activation_datetime
     # Return the results
     return list(zip(datetime_list, wet_dry_bits, temp))
 
-def plot_data(data_list, file_name, color1='blue', color2='red', linestyle1=None, linestyle2=None):
+def plot_data(data_list, color1='blue', color2='red', linestyle1=None, linestyle2=None):
     # Extracting columns from the list of lists
     datetime_values = [row[0] for row in data_list]
     data1 = [row[1] for row in data_list]
     data2 = [row[2] for row in data_list]
 
     # Create a single figure with two subplots
-    fig, axs = plt.subplots(2, 1, figsize=(16, 8), sharex=True)
+    # fig, axs = plt.subplots(2, 1, figsize=(16, 8), sharex=True)
+    fig, axs = plt.subplots(1, 1, figsize=(12, 6))
 
     # Plotting the data on each subplot
-    axs[0].plot(datetime_values, data1, color=color1, linestyle=linestyle1)
-    axs[1].plot(datetime_values, data2, color=color2, linestyle=linestyle2)
+    # axs[0].plot(datetime_values, data1, color=color1, linestyle=linestyle1)
+    axs.plot(datetime_values, data2, color=color2, linestyle=linestyle2)
+    axs.plot(datetime_values, run*np.ones_like(datetime_values), color="blue")
 
     # Formatting x-axis
     date_strings = [date.strftime('%Y-%m-%d %H:%M:%S') for date in set(datetime_values)]
@@ -146,44 +115,43 @@ def plot_data(data_list, file_name, color1='blue', color2='red', linestyle1=None
     sorted_unique_dates = sorted(unique_dates)
     # Convert strings to datetime objects
     date_objects = [datetime.strptime(date_str, '%Y-%m-%d %H:%M:%S') for date_str in sorted_unique_dates]
-    axs[1].set_xticks(date_objects)
-    axs[1].set_xticklabels(sorted_unique_dates, rotation=45, ha='right')
-    axs[1].tick_params(axis='x', labelsize=7)
+    axs.set_xticks(date_objects)
+    axs.set_xticklabels(sorted_unique_dates, rotation=45, ha='right')
+    axs.tick_params(axis='x', labelsize=7)
 
     # Adding titles and labels
-    fig.suptitle('Measurements of Device ' + file_name[:-4])
-    axs[1].set_ylabel('Temperature [C]')
-    axs[0].set_ylabel('Wet-Dry Value')
-    axs[1].set_xlabel('Date')
+    fig.suptitle('Measurements of Device ' + str(id))
+    axs.set_ylabel('Temperature [°C]')
+    axs.set_xlabel('Date')
 
     # Adding legends
     # axs[0].legend()
-    axs[1].grid()
+    axs.grid()
     # axs[1].legend()
-    axs[0].grid(axis='x')
     # Display the plot
+    plt.savefig("Prueba " + str(run) + "C\\PRUEBA_TEMPERATURA_" + str(id) + "_T" + str(run) + "C.png")
     plt.show()
-    plt.savefig("Prueba " + str(run) + "\\PRUEBA_TEMPERATURA_" + str(id) + "_" + str(run) + ".png")
 
 # Example usage:
 id = 23
-run = 6
-wet_dry_index, temp_index = extract_index("Prueba " + str(run) + "\\output_from_msp_PRUEBA_TEMPERATURA_OLI_" + str(id) + "_" + str(run) + ".txt")
-file_name = "Prueba " + str(run) + "\\CROPPED_output_from_msp_PRUEBA_TEMPERATURA_OLI_" + str(id) + "_" + str(run) + ".txt"
+run = 8
+wet_dry_index = 34
+temp_index = 34
+activation_time = "2023-12-11 07:33:13"
+deactivation_time = "2023-12-11 08:07:27"
+file_name = "Prueba " + str(run) + "C\\output_from_msp_" + str(id) + "_T" + str(run) + "C_data.txt"
 raw_data = extract_numbers_from_txt(file_name)
 # print("raw_data", raw_data)
-activation_time = "2023-12-06 21:44:04"  # Replace with your timestamp
-deactivation_time = "2023-12-06 22:02:03"  # Replace with your timestamp
 
 result = decode_measurements(raw_data, wet_dry_index, temp_index, activation_time, deactivation_time, CAL_30C=get_cal30(id), CAL_105C=get_cal105(id))
 
 import csv
 
 # Combine the lists into a list of lists
-data = list(zip([0]*len(result), [0]*len(result), [row[0] for row in result], [0]*len(result), [row[2] for row in result]))
+data = list(zip([id]*len(result), [run]*len(result), [row[0] for row in result], [0]*len(result), [row[2] for row in result]))
 
 # Specify the CSV file path
-csv_file_path = "Prueba " + str(run) + "\\PRUEBA_TEMPERATURA_" + str(id) + "_" + str(run) + ".csv"
+csv_file_path = "Prueba " + str(run) + "C\\PRUEBA_TEMPERATURA_" + str(id) + "_" + str(run) + "C.csv"
 
 # Write data to the CSV file
 with open(csv_file_path, 'w', newline='') as csvfile:
@@ -197,4 +165,4 @@ with open(csv_file_path, 'w', newline='') as csvfile:
 
 print(f'Data has been written to {csv_file_path}')
 
-plot_data(result, file_name)
+plot_data(result)
