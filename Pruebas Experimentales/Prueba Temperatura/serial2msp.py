@@ -66,7 +66,7 @@ def find_port():
         return ''
 
 id = 23
-run = 8
+run = 28
 
 print("Connected to logger " + str(id) + " in run " + str(run))
 esp = serial.Serial(port=find_port(), baudrate=115200, timeout=1)

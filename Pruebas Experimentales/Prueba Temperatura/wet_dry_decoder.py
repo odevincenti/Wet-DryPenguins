@@ -134,11 +134,11 @@ def plot_data(data_list, color1='blue', color2='red', linestyle1=None, linestyle
 
 # Example usage:
 id = 23
-run = 8
-wet_dry_index = 34
-temp_index = 34
-activation_time = "2023-12-11 07:33:13"
-deactivation_time = "2023-12-11 08:07:27"
+run = 28
+wet_dry_index = 36
+temp_index = 36
+activation_time = "2023-12-12 09:19:43"
+deactivation_time = "2023-12-12 09:55:00"
 file_name = "Prueba " + str(run) + "C\\output_from_msp_" + str(id) + "_T" + str(run) + "C_data.txt"
 raw_data = extract_numbers_from_txt(file_name)
 # print("raw_data", raw_data)
