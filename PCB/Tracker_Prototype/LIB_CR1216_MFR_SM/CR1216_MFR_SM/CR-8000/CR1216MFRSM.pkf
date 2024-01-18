@@ -1,0 +1,10 @@
+(unit MM)
+
+(package "CR1216MFRSM"
+    (type UNDEF)
+    (uver 2)
+    (mountForm default
+        (footprintRef "CR1216MFRSM")
+        (spec "default")
+    )
+)
