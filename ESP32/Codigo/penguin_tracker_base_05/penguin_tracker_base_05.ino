@@ -17,12 +17,13 @@
 #define ENABLE_TX     digitalWrite(PIN_TX_ENABLE,LOW)
 #define DISABLE_TX    digitalWrite(PIN_TX_ENABLE,HIGH)
 
+
+#define IGNORE_FIRST_MOMENTS true
+
+// TODO tracking_buffer_valid resetear y asi tambien los otros
+
 bool master_control = false;
 bool operating_mode_set = false;
-char new_operating_mode = 0; 
-
-
-
 
 
 bool setting = false;
@@ -40,63 +41,73 @@ bool activation_time_set = false;
 
 // TODO!
 char starting_date_input[256] = "";
-int operating_mode_to_set = OPERATING_MODE__INACTIVE;
+char operating_mode_to_set = OPERATING_MODE__INACTIVE;
 
-typedef int PCinputHandler(char input);
+typedef int HandlerOutput_t;
+typedef HandlerOutput_t PCinputHandler(char input);
+#define NO_ACTION_NEEDED ((HandlerOutput_t)0) 
+#define AN_ERROR_OCCURRED ((HandlerOutput_t)-1)
+#define DISCONNECT_MSP   ((HandlerOutput_t)1)  
 
-int H_get_fast_data(char input){
-    return 0;
+
+HandlerOutput_t H_get_fast_data(char input){
+    bool answer = get_fast_data();
+    if(answer){
+        PC.print(OK_INDICATOR);
+        PC.write(TERMINATOR);
+        return NO_ACTION_NEEDED;
+    }else{
+        PC.write(ERROR_INDICATOR);
+        PC.write(TERMINATOR);
+        return AN_ERROR_OCCURRED;
+    }
+   
 }
 
-int H_get_last_events(char input){
+HandlerOutput_t H_get_last_events(char input){
     bool answer = get_last_events();
     if(answer){
         PC.print(OK_INDICATOR);
         PC.write(TERMINATOR);
-        return 0;
+        return NO_ACTION_NEEDED;
     }else{
         PC.write(ERROR_INDICATOR);
         PC.write(TERMINATOR);
-        return -1;
+        return AN_ERROR_OCCURRED;
     }     
 }
 
 
-int H_unknown_input(char input){
-    //PC.print("UNKNOWN PC INPUT = ");
-    //PC.write(input);
-    //PC.print("(");
-    //PC.print((int)input);
-    //PC.print(")\n");
+HandlerOutput_t H_unknown_input(char input){
     PC.write(ERROR_INDICATOR);
     PC.write(TERMINATOR);
-    return -1;
+    return AN_ERROR_OCCURRED;
 }
 
-int H_toggle_led(char input){
+HandlerOutput_t H_toggle_led(char input){
     const char* answer = toggle_led();
     if(answer != NULL){
         PC.print(answer);
         PC.write(TERMINATOR);
-        return 0;
+        return NO_ACTION_NEEDED;
     }else{
         PC.write(ERROR_INDICATOR);
         PC.write(TERMINATOR);
-        return -1;
+        return AN_ERROR_OCCURRED;
     }   
 }
 
-int H_get_FSM_state(char input){
+HandlerOutput_t H_get_FSM_state(char input){
     int answer = get_current_menu();
     PC.print(answer);
     PC.write(TERMINATOR);
-    return answer == UNKNOWN_MENU? -1: 0;
+    return answer == UNKNOWN_MENU? AN_ERROR_OCCURRED: NO_ACTION_NEEDED;
 }
 
-int H_activate_master(char input){
+HandlerOutput_t H_activate_master(char input){
     master_control = true;
     PC.print("ACTIVATED MASTER CONTROL\n");
-    return 0;
+    return NO_ACTION_NEEDED;
 }
 
 bool compare_strings(const char* substring, const char* main_string){
@@ -113,31 +124,29 @@ bool compare_strings(const char* substring, const char* main_string){
     return answer;
 }
 
-int H_set_operating_mode1(char input){
+HandlerOutput_t H_set_operating_mode1(char input){
     setting_operating_mode = true;
-    PC.print("SET OPERATING MODE PART 1\n");
-    return 0;
+    return NO_ACTION_NEEDED;
 }
 
-int H_set_operating_mode2(char input){
+HandlerOutput_t H_set_operating_mode2(char input){
     setting_operating_mode = false;
     operating_mode_set = true;
     if(input < '0'){
-        new_operating_mode ='0';
+        operating_mode_to_set ='0';
     }else if (input > '3'){
-        new_operating_mode ='3';
+        operating_mode_to_set ='3';
     }else{
-        new_operating_mode = input;
+        operating_mode_to_set = input;
     }
-    
-    PC.print("SET OPERATING MODE PART 2\n");
+
     PC.print(OK_INDICATOR);
     PC.write(TERMINATOR);
 
-    return 0;
+    return NO_ACTION_NEEDED;
 }
 
-int H_get_operating_mode(char input){
+HandlerOutput_t H_get_operating_mode(char input){
     if (!operating_mode_set){
         const char* answer = get_from_user_menu_helper(1);
         if(answer != NULL){
@@ -154,140 +163,154 @@ int H_get_operating_mode(char input){
             }
 
             PC.write(TERMINATOR);
-            return 0;
+            return NO_ACTION_NEEDED;
         }else{
-            PC.write(new_operating_mode);
+            PC.write(operating_mode_to_set);
             PC.write(TERMINATOR);
-            return -1;
+            return AN_ERROR_OCCURRED;
         }     
     }else{
-        PC.write(new_operating_mode);
+        PC.write(operating_mode_to_set);
         PC.write(TERMINATOR);
-        return 0;
+        return NO_ACTION_NEEDED;
     }
 
 }
 
-int H_get_indexes(char input){
+HandlerOutput_t H_get_indexes(char input){
     const char* answer = get_from_user_menu_helper(6,5);
     if(answer != NULL){
         PC.print(answer);
         PC.write(TERMINATOR);
-        return 0;
+        return NO_ACTION_NEEDED;
     }else{
         PC.write(ERROR_INDICATOR);
         PC.write(TERMINATOR);
-        return -1;
+        return AN_ERROR_OCCURRED;
     }     
 }
 
-int H_get_handler(char option, int variable = 1){
+HandlerOutput_t H_get_handler(char option, int variable = 1){
     const char* answer = get_helper(option,variable);
     if(answer != NULL){
         PC.print(answer);
         PC.write(TERMINATOR);
-        return 0;
+        return NO_ACTION_NEEDED;
     }else{
         PC.write(ERROR_INDICATOR);
         PC.write(TERMINATOR);
-        return -1;
+        return AN_ERROR_OCCURRED;
     }   
 }
 
 
 
-int H_get_wd_freq(char input){
+HandlerOutput_t H_get_wd_freq(char input){
     return H_get_handler('4');
 }
-int H_get_temp_freq(char input){
+HandlerOutput_t H_get_temp_freq(char input){
     return H_get_handler('5');
 }
-int H_get_calibrated_min(char input){
+HandlerOutput_t H_get_calibrated_min(char input){
     return H_get_handler('6');
 }
-int H_get_penguin_name(char input){
+HandlerOutput_t H_get_penguin_name(char input){
     return H_get_handler('7');
 }
-int H_get_logger_ID(char input){
+HandlerOutput_t H_get_logger_ID(char input){
     return H_get_handler('8');
 }
-int H_get_activ_time(char input){
+HandlerOutput_t H_get_activ_time(char input){
     if (!activation_time_set){
         return H_get_handler('9');
     }else{
         PC.print(activation_time_array);
         PC.write(TERMINATOR);
-        return 0;
+        return NO_ACTION_NEEDED;
     }
 }
-int H_get_at30(char input){
+HandlerOutput_t H_get_at30(char input){
     return H_get_handler('0',1);
 }
-int H_get_at105(char input){
+HandlerOutput_t H_get_at105(char input){
     return H_get_handler('0',2);
 }
 
-int H_atime_finished_handler(void){
+HandlerOutput_t H_atime_finished_handler(void){
     PC.print(OK_INDICATOR);
     PC.write(TERMINATOR);
     activation_time_set = true;
-    return 0;    
+    return NO_ACTION_NEEDED;    
 }
 
 // TODO: que si no recibe pronto ], considera que fue error!
-int H_set_finished_handler(void){
+HandlerOutput_t H_set_finished_handler(void){
     bool answer = set_helper(setting_menu_selected, setting_command,setting_array);
     if(answer){
-        //PC.print("RECIVED TRUE\n");
         PC.print(OK_INDICATOR);
         PC.write(TERMINATOR);
-        return 0;
+        return NO_ACTION_NEEDED;
     }else{
-        //PC.print("RECIVED FALSE\n");
         PC.write(ERROR_INDICATOR);
         PC.write(TERMINATOR);
-        return -1;
+        return AN_ERROR_OCCURRED;
     }   
 }
 
-int H_atime_init_handler(char input){
+HandlerOutput_t H_atime_init_handler(char input){
     setting_activation_time = true;
     activation_time_index = 0;
     activation_time_array[activation_time_index] = 0;
-    return 0;
+    return NO_ACTION_NEEDED;
 }
 
-int H_set_init_handler(char command, int setting_menu){
+HandlerOutput_t H_set_init_handler(char command, int setting_menu){
     setting = true;
     setting_index = 0;
     setting_array[setting_index] = 0;
     setting_command = command;
     setting_menu_selected = setting_menu;
-    return 0;
+    return NO_ACTION_NEEDED;
 }
 
-int H_set_wd_freq(char input){
+HandlerOutput_t H_set_wd_freq(char input){
     return H_set_init_handler('4',SET_MENU);
 }
-int H_set_temp_freq(char input){
+HandlerOutput_t H_set_temp_freq(char input){
     return H_set_init_handler('5',SET_MENU);
 }
-int H_set_calibrated_min(char input){
+HandlerOutput_t H_set_calibrated_min(char input){
     return H_set_init_handler('6',SET_MENU);
 }
-int H_set_penguin_name(char input){
+HandlerOutput_t H_set_penguin_name(char input){
     return H_set_init_handler('N',DEBUG_MENU);
 }
 
-int H_quit_handler(char operating_mode){
-    
+HandlerOutput_t H_quit_handler(char operating_mode){
+    bool answer = false;
+    if (activation_time_set){
+        answer = quit_helper(operating_mode, activation_time_array);
+    }
+    else{
+        answer = quit_helper(operating_mode, "");
+    }
+    if(answer){
+        PC.print(OK_INDICATOR);
+        PC.write(TERMINATOR);
+        return DISCONNECT_MSP;
+    }else{
+        PC.write(ERROR_INDICATOR);
+        PC.write(TERMINATOR);
+        return AN_ERROR_OCCURRED;        
+    }
 }
+   
 
-int H_activate_logger(char input){
-    return 0;
+HandlerOutput_t H_activate_logger(char input){
+    return H_quit_handler(operating_mode_to_set);
 }
-int H_deactivate_logger(char input){
-    return 0;
+HandlerOutput_t H_deactivate_logger(char input){
+    return H_quit_handler(OPERATING_MODE__INACTIVE);
 }
 
 
@@ -309,7 +332,7 @@ PCinputHandler* input_handlers[128] = { // RETURN 0 = OK; -1 = NOT OK!
 //  8                       9                       :                       ;                       <                       =                       >                       ?
     &H_unknown_input,       &H_unknown_input,       &H_unknown_input,       &H_unknown_input,       &H_unknown_input,       &H_unknown_input,       &H_unknown_input,       &H_unknown_input,
 //  @                       A                       B                       C                       D                       E                       F                       G
-    &H_unknown_input,       &H_get_activ_time,      &H_unknown_input,       &H_get_calibrated_min,  &H_unknown_input,       &H_get_last_events,     &H_get_FSM_state,       &H_unknown_input,
+    &H_unknown_input,       &H_get_activ_time,      &H_unknown_input,       &H_get_calibrated_min,  &H_get_fast_data,       &H_get_last_events,     &H_get_FSM_state,       &H_unknown_input,
 //  H                       I                       J                       K                       L                       M                       N                       O
     &H_unknown_input,       &H_get_logger_ID,       &H_unknown_input,       &H_unknown_input,       &H_toggle_led,          &H_get_operating_mode,  &H_get_penguin_name,    &H_unknown_input,
 //  P                       Q                       R                       S                       T                       U                       V                       W
@@ -347,7 +370,6 @@ void setup() {
     operating_mode_set = false;
     activation_time_set = false;
 
-    //test_millis();
 }
 
 //      FUNCTION:
@@ -365,6 +387,10 @@ int enable_base_detect(void){
     char byte_from_msp = 0;
     //change_led_color(CONNECTING);
     ENABLE_5V;
+    if(IGNORE_FIRST_MOMENTS){
+        return true;
+    }
+
     while(!connected && millis()<timeout){
         if(MSP.available()){
             byte_from_msp = MSP.read();
@@ -397,6 +423,16 @@ void loop(){
     bool answer_from_msp_received= false;
     int return_from_handler = 0;
 
+    DISABLE_5V;
+    DISABLE_TX;
+    
+    master_control = false;
+    setting = false;
+    setting_operating_mode = false;
+    setting_activation_time = false;
+    operating_mode_set = false;
+    activation_time_set = false; 
+
 
     while(PC.sent_bytes() <= 0){ // Se queda acá hasta que reciba datos. Se podría hacer algo en el medio? O hacer que este en "sleep"?
         if(MSP.available()){
@@ -425,6 +461,7 @@ void loop(){
                 connected = true;
                 operating_mode_set = false;
                 activation_time_set = false;
+                operating_mode_to_set = OPERATING_MODE__INACTIVE;
                 PC.print(OK_INDICATOR);
                 PC.write(TERMINATOR);
             }else{
@@ -476,13 +513,6 @@ void loop(){
                             }
                         }else if(setting){
                             if(byte_from_pc == SETTING_INPUT_FINISHED){
-                                //PC.print("SETTING FINISHED, COMMAND = ");
-                                //PC.write(setting_command);
-                                //PC.print(" AT MENU ");
-                                //PC.print(setting_menu_selected);
-                                //PC.print("\nSETTING STRING = ");
-                                //PC.print(setting_array);
-                                //PC.print("\n");
                                 return_from_handler = H_set_finished_handler(); // DO SOMETHING WITH -1!!!
                                 setting = false;
                             }else{
@@ -491,9 +521,6 @@ void loop(){
                                     setting_array[setting_index] = 0;
                                 }
 
-                                //PC.print("SETTING, RECEIVED = ");
-                                //PC.write(byte_from_pc);
-                                //PC.print("\n");
                             }
                             
                         }else if (setting_activation_time){
@@ -515,7 +542,7 @@ void loop(){
 
                         // TODO: return_from_handler do something!
                         switch(return_from_handler){
-                            case 1:
+                            case DISCONNECT_MSP:
                             quit = true;
                             break;
 
@@ -549,71 +576,12 @@ void loop(){
             }
             DISABLE_TX;
             DISABLE_5V;
+            change_led_color(BASE_POWER_ON);
         }
 
 
     }
 }
 
-/*
-                    switch((char) byte_from_pc){
-                    case GET_FSM_STATE:                 // F
-                        PC.print("Y\n"); //TODO: que funcione de verdad!!
-                        break;
-                    case GET_WET_AND_DRY_FREC:    // W
-                        get_helper_function('4');
-                        last_time = millis();
-                        break;
-                    case GET_TEMPERATURE_FREC:    // T
-                        get_helper_function('5');
-                        last_time = millis();
-                        break;
-                    case GET_CALIBRATED_MINUTE: // C
-                        get_helper_function('6');
-                        last_time = millis();
-                        break;
-                    case GET_NAME:                            // N
-                        get_helper_function('7');
-                        last_time = millis();
-                        break;
-                    case GET_LOGGER_ID:                 // I
-                        get_helper_function('8');
-                        last_time = millis();
-                        break;
-                    case TOGGLE_LED:                        // L
-                        toggle_led();
-                        last_time = millis();
-                        break;
-                    case GET_ACTIVATION_TIME:     // A
-                        get_helper_function('9');
-                        last_time = millis();
-                        break;
-                    case GET_AT_30C:                        // 3
-                        get_calibration_C(at30C);
-                        last_time = millis();
-                        break;
-                    case GET_AT_105C:                     // 1
-                        get_calibration_C(at105C);
-                        last_time = millis();
-                        break;    
-                    case GET_ALL_INDEX:                 // X
-                        get_indexes();
-                        last_time = millis();
-                        break;
-                    case GET_OPERATING_MODE:        //M
-                        get_operating_mode();
-                        last_time = millis();
-                        break;
-
-                    case '?':
-                        test_buffer();
-                        last_time = millis();
-                        break; 
-
-                    default:
-                        break;
-                    }
-
-                    */
 
 

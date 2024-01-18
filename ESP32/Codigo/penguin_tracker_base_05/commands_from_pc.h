@@ -18,14 +18,14 @@
 #define OPERATING_MODE__BOTH        '3' //
 #define GET_CALIBRATED_MINUTE 'C' //
 #define SET_CALIBRATED_MINUTE 'c' //
-#define GET_ACTIVATION_TIME   'A' //
+#define GET_ACTIVATION_TIME   'A' // NOTA: NO FUNCA PORQ SE PIERDE!!!
 #define SET_ACTIVATION_TIME   'a' //
 #define GET_AT_30C            '3' //
 #define GET_AT_105C           '1' //
-#define ACTIVATE_LOGGER       'Q'
-#define DEACTIVATE_LOGGER     'q'
+#define ACTIVATE_LOGGER       'Q' //
+#define DEACTIVATE_LOGGER     'q' //
 #define TOGGLE_LED            'L' //
-#define GET_DATA_FAST         'D' 
+#define GET_DATA_FAST         'D' //
 #define GET_EVENTS            'E' //
 #define GET_ALL_INDEX         'X' //
 

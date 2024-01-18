@@ -56,6 +56,9 @@ int receive_last_message(int time_out = 2000);
 //      OUTPUT:
 //  Nothing  
 void print_input_buffer(bool long_data = false);
+//      OUTPUT:
+//  tracking_buffer_valid (0=bad, 1=good)
+bool print_fast_data(void);
 
 //      OUTPUT:
 //  Pointer to answer string. If error, output = NULL
@@ -67,5 +70,6 @@ const char* toggle_led(void);
 bool set_helper(int menu, char command, const char* input);
 bool get_last_events(void);
 bool quit_helper(char operating_mode, const char* activation_time);
+bool get_fast_data(void);
 
 #endif
