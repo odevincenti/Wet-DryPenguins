@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP CR1216_MFR_SM
+D Coin Cell Battery 2 PIN HORIZ SMT 25mAh 12.5x1.9mm
+K
+F https://www.renatabatteries.us/products/batteries/lithium-coin-tabbed/cr1216-mfr-sm
+$ENDCMP
+#
+#End Doc Library

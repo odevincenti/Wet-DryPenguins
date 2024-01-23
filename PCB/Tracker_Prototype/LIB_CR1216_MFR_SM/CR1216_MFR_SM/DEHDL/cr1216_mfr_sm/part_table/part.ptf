@@ -1,0 +1,11 @@
+FILE_TYPE = MULTI_PHYS_TABLE;
+
+PART 'CR1216_MFR_SM'
+CLASS = DISCRETE
+{========================================================================================}
+:"MANUFACTURER_NAME", "MANUFACTURER_PART_NUMBER"= "PART_NUMBER", "JEDEC_TYPE", "PACK_TYPE", "MOUSER_PART_NUMBER", "MOUSER_PRICE/STOCK", "ARROW_PART_NUMBER", "ARROW_PRICE/STOCK", "DESCRIPTION", "DATASHEET", "HEIGHT";
+{========================================================================================}
+ "RENATA", "CR1216 MFR SM" (!) = "", "CR1216MFRSM", "Other", "614-CR1216-MFR-SM", "https://www.mouser.co.uk/ProductDetail/Renata/CR1216-MFR-SM?qs=4nVQHMCMxQx0A4GUuQVNLg%3D%3D", "", "", "Coin Cell Battery 2 PIN HORIZ SMT 25mAh 12.5x1.9mm", "https://www.renatabatteries.us/products/batteries/lithium-coin-tabbed/cr1216-mfr-sm", "2.1 mm"
+END_PART
+
+END.

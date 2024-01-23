@@ -1,0 +1,17 @@
+.CR1216_MFR_SM :1 ;Coin Cell Battery 2 PIN HORIZ SMT 25mAh 12.5x1.9mm
+CR1216MFRSM
+*STM BT
+*NGS
+*PLB 1="+" 2="-"
+*MXP 2
+*DFN CR1216_MFR_SM
+~!Manufacturer_Name (RENATA)
+~!Manufacturer_Part_Number (CR1216 MFR SM)
+~!Mouser Part Number (614-CR1216-MFR-SM)
+~!Link Mouser Price/Stock (https://www.mouser.co.uk/ProductDetail/Renata/CR1216-MFR-SM?qs=4nVQHMCMxQx0A4GUuQVNLg%3D%3D)
+~!Arrow Part Number (-)
+~!Arrow Price/Stock (-)
+~!Link Datasheet (https://www.renatabatteries.us/products/batteries/lithium-coin-tabbed/cr1216-mfr-sm)
+~!Height (2.1mm)
+CR1216_MFR_SM
+1.1!U 2.1!U 

@@ -1,0 +1,13 @@
+(unit MM)
+
+(package "CR1216_MFR_SM"
+    (type UNDEF)
+    (uver 2)
+    (cuser "SamacSys")
+    (uuser "SamacSys")
+    (utime 2021-10-07-08:12:57)
+    (mountForm default
+        (footprintRef "CR1216MFRSM")
+        (spec "System")
+    )
+)
