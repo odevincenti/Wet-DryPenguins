@@ -1,9 +1,11 @@
 /venv/
 /.vscode/
-Scripts/__pycache__/
+**/__pycache__/
 **.net
 **.log
 **.raw
 **.op.raw
+**.launches
 **/Debug/*
 **/.settings/*
+Gastos Pinguinos/*
