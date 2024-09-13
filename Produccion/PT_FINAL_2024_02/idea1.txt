@@ -1,0 +1,696 @@
+   PT_PRUEBA_DE_RESISTENCIA+16
+-> PT_PRUEBA_PLACA_V3_01 (con cosas de PT_Minitipo_ADCTest03)
+-> PT_PRUEBA_PLACA_V3_02
+-> PT_PRUEBA_PLACA_V3_03
+-> PT_PRUEBA_PLACA_V3_04
+-> PT_PRUEBA_PLACA_V3_05
+-> PT_PRUEBA_CONSUMO_Fase2_02 (con codigo de PT_PRUEBA_CONSUMO_Fase2_01, lo hago por el config)
+-> PT_PRUEBA_CONSUMO_Fase2_03
+-> PT_PRUEBA_CONSUMO_Fase2_04
+-> PT_TEMPLATE_01
+-> PT_FINAL_2023_01 (con ideas y codigo de PT_PRUEBA_SAVE_RTCCNT_04)
+-> PT_FINAL_2023_02 (hora de verificar que con active = false -y todas sus variaciones- esto funciona) ( NO OLVIDAR DESCONECTAR EL TX - RX DE UART)
+-> PT_FINAL_2023_03 
+-> PT_FINAL_2023_04 
+-> PT_FINAL_2023_05 (quitandole cosas que no se van a usar en el modelo final, como mucho led y demas)
+-> PT_FINAL_2023_06 (more cleaning)
+-> PT_FINAL_2024_01 
+-> PT_FINAL_2024_02
+	[X] Minuto calibrado mediante uart
+		NOTA: pareceria ir mas lento en LPM que en AM
+	[ ] Corregir desfase indices?
+	[X]	if(resets_since_last_communication < 0xFFFF){
+            UPDATE_PERSISTENT_VAR(resets_since_last_communication,resets_since_last_communication+1);
+        } // AHORA AGREGUE EL "if"
+    [ ] Que pasa si se resetea en el minuto anterior a la medicion -> considera actual medicion como no valida!
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//  INFO DE PT_FINAL_2024_01 :
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+				(Correcciones: 
+							a) en reset, sensing = 0 duplicado paso a ser uart. 
+							b) Coloque por las dudas un WRITE_FRAM_DISABLE tras "cold start"
+							c) 1. Ahora ni bien termina una medicion, setea el remaining correspondiente con el period programado ( set_rtc_to_next_active tiene esa parte redundante, si bien lo que NO es redundante es el calculo de min, sustraccion en el remaining de min, y el seteo de RTC con min)
+							   2. Si se reseteo con algun remaining en 0 (osea, faltaba medir), la funcion de medicion se llama con "use_dummy" = true; en vez de medir, coloca un valor fijo en memoria (0 para w&d, 0xFFFF para temperatura). AHI NO DEBERIA reiniciarse de nuevo.
+							d) cambie el orden de PIN_SEL_01(rx_pin); PIN_SEL_01(tx_pin); (ahora rx_pin va antes, cosa de que si tx_pin se pone en 3V3, no haya "corto" mediante las 2 R de 100ohm hacia rx_pin, en ese entonces output 0V
+							e) agregue #pragma PERSISTENT(starting_date) (era la que no se guardaba), pero tuve que disminuir el tamaño de penguin_name y de starting_date
+							f) Coloque UPDATE_PERSISTENT_VAR(memory_full,1); (antes era memory_full=1, OBVIO QUE NO ANDABA)
+							
+					PRUEBAS:
+							a)
+							1. Probar que si reseteo el micro mientas en uart (tipo, en uart, le SACO la pila y la tension externa)
+							   solo registre "reset while in uart" 1 vez, y no las proximas
+							   COMO:
+							   x- Programo sin pilas
+							   x- desconecto de programador
+							   x- conecto a digilent
+							   x- comunico
+							   x- reviso eventos
+							   		2024-08-16 00-58-51.mkv
+							   x- sin terminar, apago TX y Vext de digilent
+							   x- desconecto
+							   x- pongo y saco la pila 3 veces (al final, queda afuera)
+							   x- conecto a digilent
+							   x- comunico
+							   x- reviso eventos
+							   		2024-08-16 01-09-30.mkv
+							   	LOS RESULTADOS FUERON LOS ESPERADOS!
+							   		
+							2. Probar lo q me parece que pasa, q sin bateria, no hay modo de salir sin un "reset while uart"
+							   COMO:
+							   x- Programo con pila
+							   		NOTA: costo hacerlo porq no queria q los pines de programador choquen con la pila
+							   		Tuve que sacar el aislante y programarlo del mismo lado que esta la pila, porq
+							   		si queria hacerlo del otro iba a tener que desconectar los dupont hembra
+							   		que estan en los pines de comunicacion, y eso iba a ser tedioso de volver a conectar (otros!)
+							   x- desconecto programador
+							   x- conecto a digilent
+							   x- comunico
+							   x- reviso eventos
+							   		2024-08-16 01-23-52.mkv
+							   			NOTA: PORQUE TANTOS RESETS!?
+							   			DESPUES VER SI PUEDE HACER MEDICIONES BIEN!
+							   x- CONFIGURO en modo inactive
+							   x- termino configuracion, apagando TX externo y Vext de digilent
+							   x- desconecto
+							   x- le quito la pila
+							   x- conecto a digilent
+							   x- comunico
+							   x- reviso eventos
+							   		2024-08-16 01-29-03.mkv
+							   			NOTA: WOOPS, SE ME DESACTIVO POR INACTIVIDAD LA 1RA VEZ!
+							   			NOTA! Reset while in UART al inicio, PORQUE?!
+							   x- CONFIGURO en modo inactive
+							   x- termino configuracion, apagando TX externo y Vext de digilent
+							   x- desconecto
+							   x- conecto a digilent
+							   x- comunico
+							   x- reviso eventos
+							   		2024-08-16 01-38-12.mkv
+							   			ANALIZAR QUE ESTA PASANDO!
+								
+							Voy a testear si puede medir w&d y temp
+								Le puse la pila
+								Lo CONFIGURE <1:41>
+									2024-08-16 01-40-23.mkv
+								Lo desconecte de la digilent
+								1-1-60  
+								2344=>10 min
+								60 => 15 seg
+								Lo dejo unos minutos
+								Lo conecto a la digilent
+								>1{Reviso eventos y mediciones <1:56> DELTA: aprox 15 min
+								{Lo puse inactive
+								>{Me vuelvo a comunicar, veo eventos
+								{Lo puse inactive
+								>{Desconecto, reconecto, comunico, veo eventos
+								{Puse inactive
+								{Desconecto
+									2024-08-16 01-55-53.mkv
+									
+								>1) Cuando lo configure para medicion w&d y temp, se
+									desconecto antes de cerrar UART. Quedo con la configuracion
+									nueva de realizar las mediciones, pero no llego a borrar
+									eventos previos. Analizar si se puede hacer antes para
+									que eso no pase, aun en caso de que no tenga bateria
+									DELTA 15 min, para 173/174 mediciones son 11,5 mediciones por min aprox
+									Osea, 1 medicion cada 5,2 seg aprox
+									Algo no me cuadra, porq aparecen /0 mas rapido?
+									Puede ser que corresponda con la diferencia entre el
+									Reset, y el UART Comunication (170/169 - 174/173)
+									Aun no entiendo porq en esos RESET aparece esa diferencia
+									entre mediciones, donde W&D le gana en 1 a temperatura
+									
+							c) como hago que se resetee mientras mide temperatura???
+								PRUEBA 1
+								x- conecto una pila vieja
+								x- conecto a digilent
+								x- comunico
+								x- configuro para 1-1-30 w&d y temp.
+									2024-08-18 21-15-31.mkv (NOTA! FUNCIONABA MAL EL RELOJ!)
+								x- desconecto de digilent
+								x- espero 10 min 
+								x- conecto a digilent
+								x- comunico
+								x- reviso datos (eventos, medicion)
+									2024-08-18 21-24-23.mkv
+								x- paso a inactivo
+								x- desconecto de digilent
+								x- desconecto pila
+									RESULTADO: la pila no le alcanzo siquiera para medir nada
+									Ni siquiera para programarse bien (asumo q eventos no
+									se borraron, revisar)
+									TRAS REVISAR VIDEOS: en efecto, esa pila esta tan gastada
+									que es como si no estuviera
+								PRUEBA 2
+								x- conecto PILA NUEVA
+								x- conecto a digilent, comuninco, programo 1-1-30 w&d y temp
+									2024-08-18 21-30-31.mkv
+								x- desconecto digilent (1 med/sec? CLARO! calibrated_minute es para 1 min. Los period son para que valga mas!)
+								x- espero 10 min
+								x- conecto a digilent, comunico, programo inactive
+									2024-08-18 21-53-26.mkv
+								x- desconecto digilent
+								x- desconecto pila
+									OH NO, ACABO DE DESCARGAR OTRA BATERIA!
+									SOLO TUVO LAS 8 MEDICIONES QUE VI DESDE LA DIGILENT WTF?
+									
+								
+				
+								
+TAREAS PENDIENTES
+[ ] Corregir que hay variables que no se guardan [fecha de activacion]
+[ ] Que se configure cuando le pongas algun modo (1-4) aunque este sin pila??? (ahora se "muere" antes de salir de funcion de UART)
+
+PRUEBA BATERIA!
+
+Calculos:
+
+1 medicion cada 10 min
+6 mediciones cada hora
+144 mediciones por día
+8640 mediciones en 60 días
+
+2 bytes + 1 bit por medicion = 2.125 bytes por medicion
+18360 bytes en 60 días
+
+MEMORIA: 28000 bytes (me alcanza)
+
+Hoy es 22/08/24 a las 2:52 AM
+Quiero realizar una prueba que termine aprox 23/08/24 a las 12:00 del mediodia
+Serían 32 hs aprox
+18360 bytes en 32 hs
+10 mediciones por minuto aprox
+
+1 medicion cada 6 segundos
+10 mediciones por minuto
+600 mediciones por hora
+19200 mediciones en 32 hs
+OK!
+Entonces, a lo sumo, las programo a las 4AM hoy, cosa que 12 mediodia mañana esten ya con 19200 mediciones
+Mi objetivo es ver si no se reinicia hasta ese entonces CON UNA PILA NUEVA
+Primero, ver que 6 segundos sea 6 segundos
+Lesto, con 1-1-30 logro que tome una medicion cada 1 segundos
+Solo debo hacer 6-6-30 y lo consigo.
+Sin embargo, debo considerar la energia que se gasta por despertar para NO tomar la medicion??
+Pensar que en campo, se despierta cada minuto, para ver que le falta 1 minuto menos
+Capaz deberia hacer algo semejante. 
+Si hago que se despierte cada medio segundo, puedo hacer que sea un 12-12-15
+Voy a probar un 1-1-15 y ver si esta masomenos "sincronizado" con los segundos
+Parece que va bien, pero temo que sea un poquito lento
+Si hiciera un 8-8-15, entonces, teoricamente seria 1 medicion cada 8 medios segundos (4 seg)
+15 mediciones por minuto
+900 mediciones por hora
+28800 mediciones en 32 hs
+
+OKNO, mejor 10-10-15
+1 medicion cada 5 segs
+12 mediciones por minuto
+720 mediciones por hora
+23040 mediciones en 32 hs
+
+18360/23040 = 0,797, es decir, 20% de tolerancia hacia abajo
+28000/23040 = 1,215, 20% tolerancia hacia arriba
+LESTO, HARE UN 10-10-15
+	2024-08-22 04-28-36.mkv
+A ESPERAR!
+
+
+Mientras tanto
+23/08/24
+Voy a comunicarme nuevamente con la placa que potearon
+Parece que se quedo sin pila
+Porque? O sera que esta mal colocada? Algo no esta haciendo buen contacto?
+Porq eso me pasaba a veces segun como coloco la pila, a veces
+parecia hacer eso de tirarme basura en cuanto desconecto y
+despues ver que tuvo un reset ahi while in uart, y otras funcionaba
+bien. Tendre que revisar mas a fondo
+	2024-08-23 02-27-34.mkv
+Voy a analizar los valores de temperatura
+ME OLVIDE EL GET 0, ahi lo hago:
+	2024-08-23 02-35-04.mkv
+A veces entra ruido, dios sabe porque:
+	2024-08-23 02-40-42.mkv
+OK, viendo el primero de estos tres videos, calcule la temperatura medida
+25.3 al inicio
+7.8 no mucho mas tarde
+1 medicion = 10 min aprox
+1 renglon = 4 mediciones = 40 min
+2 renglones=8 mediciones = 1h 20min
+3 renglones=12mediciones = 2 hs
+
+>>> C30 = 2153
+>>> C105 = 2731
+>>> def temp(i):
+...     return ( (i-C30)*(105-30)/(C105-C30) + 30 )
+...
+>>> def t(a,b):
+...     return temp(a+b*256)
+...
+ULTIMOS 16 valores:
+BYTES	CELSIUS
+255,7	16.24567474048443
+
+0,8		16.37543252595156
+2,8		16.634948096885815
+137,8	34.15224913494809
+73,8	25.847750865051903
+
+72,8
+83,8
+82,8
+84,8
+
+21,8
+20,8
+113,8	31.038062283737023
+84,8
+
+87,8
+88,8
+89,8	27.923875432525953
+
+
+Por otra parte, en W&D solo hay un 7. En que posicion?
+Renglon 44, primer byte, 7 = 0b0000 0111
+43*8*8 + 3 = 2755
+JUSTO DONDE SE CORTAN LOS DATOS
+Capaz hay un corto en algun lado. Sera por la temperatura?
+
+
+
+Ok volvamos al tema original
+
+23/08/24 16:39
+Hora de desconectar el de la prueba de bateria
+	2024-08-23 16-40-34.mkv
+RECORDAR: se resetea cada medio segundo, mide cada 5 segundos
+RECORDAR:														22/08/24
+Me dio OK\0 de configuracion previa								04:32:29
+
+																23/08/24
+1) VCC 4V que justo no capte, posiblemente: 					16:40:54 ish
+2) VCC 4V que justo no capte, posiblemente: 					16:41:34 ish
+3) VCC 5V que justo no capte, posiblemente: 					16:41:50 ish
+4) empece a tocar los pines hasta ajustarlos bien (de nuevo) 	16:42:00 ish
+5) Parece que midio 											16:42:08
+6) Parece que midio 											16:42:13
+7) VCC 5V 														16:42:19
+8) Recibi OK 													16:42:20
+9) Recibi x15\0\0 (inactivity, false base detection)        	16:42:23
+10)VCC 5V + Recibi OK											16:42:27
+11)Password e inicio de UART exitoso							16:42:29
+
+24hs + 16-4 hs + 10 min = 36hs 10min = 2170 min = 26040 mediciones esperadas
+TENGO 22203/22200 mediciones (un 85% de los esperados, dentro de los "aceptable")
+6 resets since las communication
+EVENTOS
+
+ W&D   TEMP
+    0/    0 ACTIVACION					  22/08 04:32:29
+ 1175/ 1175 Reset while sensing 	(Δ 0) 22/08 06:27:20 REGLA DE 3
+22194/22195 Reset while sensing		(Δ 1) 23/08	v ?
+22194/22196 Reset					(Δ 2) 23/08	v ?
+22194/22197 Reset					(Δ 3) 23/08	16:41:50 "5V que justo no capte"
+22197/22200 Reset					(Δ 3) 23/08	16:42:08 "Parece que midio"
+22198/22201 Reset					(Δ 3) 23/08	16:42:13 "Parece que midio"
+22199/22202 Timeout while password	(Δ 3) 23/08 16:42:20-23
+22200/22203 UART communication		(Δ 3) 23/08 16:42:27
+
+
+[ ] Porq resets while sensing desfasan?
+[ ] Que ocurre con mediciones en reset while sensing
+[X] Mediciones DONDE NO DEBERIAN! (tema de persistent que se me olvido)
+
+VOY A PROBAR SI DETECTA 4V, o solo 5V
+	2024-08-23 17-37-48.mkv
+DETECTA AMBOS
+TONSES?
+
+
+
+PRUEBA PLACAS V4, 10-10-15 (estima, 1 med/5 seg)
+OJO! parece que todas tienen shottkey donde deberian ser diodos normales
+V4 P1
+	2024-08-23 19-12-05.mkv
+	NOTA: tiempos aproximados (especialmente de activacion)
+	18 37 54	start
+	19 12 13	stop
+		2059	dif	= 34 min 19 seg, 411,8 med aprox
+	eventos:
+	371	371	False base detect
+	427	427	UART communication	
+	resets since last communication = 0
+	ambos indices en 427 (3,7% de diferencia)
+	LOG:
+	W&D todo en 0
+	Temp: todas empezando en 8, razonable
+V4 P2
+	2024-08-23 19-04-24.mkv
+	NOTA: tiempos aproximados (especialmente de activacion)
+	18 42 10	67.330
+	19 04 56	68.696
+				 1.366	273,2 med estimadas
+	eventos:
+	297	297	UART communication
+	resets since last communicaition = 0
+	ambos indices en 297 (8,7% diferencia)
+	LOG:
+	W&D en 0, temp. empiezan todas en 8
+V4 P3
+OJO use pila que use en prueba bateria
+	2024-08-23 19-52-45.mkv
+	NOTA: tiempos aproximados (especialmente de activacion)
+	19 02 50	68.570
+	19 53 44	71.624	
+				 3.054	610.8 med estimadas 
+	eventos:
+	204	204	False base detect
+	555	555	False base detect
+	561	561	UART communication	
+	resets since last communication = 0
+	ambos indices en 561 (-8.2% diferencia)
+	LOG:
+	W&D en 0, temp. empiezan todas en 8
+CONCLUSION: pareceria que las 3 anduvieron bien, puedo usar ahora la que quiera para las pruebas que siguen (ej: PT_FINAL_2024_01_led)
+	
+	
+
+	MEDICION DE Von de diodos de varias placas (sin micro soldado)
+D1	0.241	0.240	0.236	0.236	0.236
+D2	0.241	0.239	0.234	0.236	0.236
+D3	0.234	0.232	0.229	0.230	0.229
+D4	0.234	0.232	0.230	0.230	0.229
+D5	0.234	0.230	0.232	0.233	0.228
+
+
+x0F\x8B\x8A\x15
+x0F\x8B\x8A\x15
+
+
+===============
+30/08/24
+Programo para prueba de poteo de V4, prueba 2 (porq la que sobrevivio de las 2 de la prueba 1, la pila no funca mas, y la taladramos)
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+**** Clean-only build of configuration Debug for project PT_FINAL_2024_01 ****
+
+"C:\\ti\\ccs1271\\ccs\\utils\\bin\\gmake" -k -j 16 clean -O 
+ 
+DEL /F  "PT_FINAL_2024_01.out" 
+DEL /F "adc_functions.obj" "fsm.obj" "logging.obj" "my_project_variables.obj" "prueba_v3_c.obj" "uart_functions.obj" 
+DEL /F "adc_functions.d" "fsm.d" "logging.d" "my_project_variables.d" "prueba_v3_c.d" "uart_functions.d" 
+Finished clean
+ 
+
+**** Build Finished ****
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+**** Build of configuration Debug for project PT_FINAL_2024_01 ****
+
+"C:\\ti\\ccs1271\\ccs\\utils\\bin\\gmake" -k -j 16 all -O 
+ 
+Building file: "../adc_functions.c"
+Invoking: MSP430 Compiler
+"C:/ti/ccs1271/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/bin/cl430" -vmspx --use_hw_mpy=F5 --include_path="C:/ti/ccs1271/ccs/ccs_base/msp430/include" --include_path="C:/Users/Alexander M/Documents/CCS/workspace_v12_alex2/PT_FINAL_2024_01" --include_path="C:/ti/ccs1271/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include" --advice:power=all --advice:hw_config=all --define=__MSP430FR2476__ --define=_FRWP_ENABLE --define=_INFO_FRWP_ENABLE -g --printf_support=minimal --diag_warning=225 --diag_wrap=off --display_error_number --silicon_errata=CPU21 --silicon_errata=CPU22 --silicon_errata=CPU40 --preproc_with_compile --preproc_dependency="adc_functions.d_raw"  "../adc_functions.c"
+"../adc_functions.c", line 23: remark #1528-D: (ULP 3.1) Detected flag polling using ADCIFG. Recommend using an interrupt combined with enter LPMx and ISR
+"../adc_functions.c", line 19: remark #1527-D: (ULP 2.1) Detected SW delay loop using __delay_cycles. Recommend using a timer module instead
+"../adc_functions.c", line 20: remark #1527-D: (ULP 2.1) Detected SW delay loop using empty loop. Recommend using a timer module instead
+"../adc_functions.c", line 39: remark #1530-D: (ULP 5.1) Detected divide operation(s). Recommend moving them to RAM during run time or not using as these are processing/power intensive
+"../adc_functions.c", line 58: remark #1528-D: (ULP 3.1) Detected flag polling using ADCIFG. Recommend using an interrupt combined with enter LPMx and ISR
+"../adc_functions.c", line 55: remark #1527-D: (ULP 2.1) Detected SW delay loop using __delay_cycles. Recommend using a timer module instead
+"../adc_functions.c", line 76: remark #1530-D: (ULP 5.1) Detected divide operation(s). Recommend moving them to RAM during run time or not using as these are processing/power intensive
+"../adc_functions.c", line 76 (col. 14): remark #1531-D: (ULP 5.2) Detected floating point operation(s). Recommend moving them to RAM during run time or not using as these are processing/power intensive
+Finished building: "../adc_functions.c"
+ 
+Building file: "../logging.c"
+Invoking: MSP430 Compiler
+"C:/ti/ccs1271/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/bin/cl430" -vmspx --use_hw_mpy=F5 --include_path="C:/ti/ccs1271/ccs/ccs_base/msp430/include" --include_path="C:/Users/Alexander M/Documents/CCS/workspace_v12_alex2/PT_FINAL_2024_01" --include_path="C:/ti/ccs1271/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include" --advice:power=all --advice:hw_config=all --define=__MSP430FR2476__ --define=_FRWP_ENABLE --define=_INFO_FRWP_ENABLE -g --printf_support=minimal --diag_warning=225 --diag_wrap=off --display_error_number --silicon_errata=CPU21 --silicon_errata=CPU22 --silicon_errata=CPU40 --preproc_with_compile --preproc_dependency="logging.d_raw"  "../logging.c"
+Finished building: "../logging.c"
+ 
+Building file: "../prueba_v3_c.c"
+Invoking: MSP430 Compiler
+"C:/ti/ccs1271/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/bin/cl430" -vmspx --use_hw_mpy=F5 --include_path="C:/ti/ccs1271/ccs/ccs_base/msp430/include" --include_path="C:/Users/Alexander M/Documents/CCS/workspace_v12_alex2/PT_FINAL_2024_01" --include_path="C:/ti/ccs1271/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include" --advice:power=all --advice:hw_config=all --define=__MSP430FR2476__ --define=_FRWP_ENABLE --define=_INFO_FRWP_ENABLE -g --printf_support=minimal --diag_warning=225 --diag_wrap=off --display_error_number --silicon_errata=CPU21 --silicon_errata=CPU22 --silicon_errata=CPU40 --preproc_with_compile --preproc_dependency="prueba_v3_c.d_raw"  "../prueba_v3_c.c"
+"../prueba_v3_c.c", line 283: remark #1538-D: (ULP 10.1) ISR RTC_ISR calls function new_event. Recommend moving function call away from ISR, or inlining the function, or using pragmas
+"../prueba_v3_c.c", line 327: remark #1528-D: (ULP 3.1) Detected flag polling using UCA0IFG. Recommend using an interrupt combined with enter LPMx and ISR
+"../prueba_v3_c.c", line 365: remark #1528-D: (ULP 3.1) Detected flag polling using UCA0IFG. Recommend using an interrupt combined with enter LPMx and ISR
+"../prueba_v3_c.c", line 400: remark #1527-D: (ULP 2.1) Detected SW delay loop using __delay_cycles. Recommend using a timer module instead
+"../prueba_v3_c.c", line 404: remark #1527-D: (ULP 2.1) Detected SW delay loop using empty loop. Recommend using a timer module instead
+Finished building: "../prueba_v3_c.c"
+ 
+Building file: "../uart_functions.c"
+Invoking: MSP430 Compiler
+"C:/ti/ccs1271/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/bin/cl430" -vmspx --use_hw_mpy=F5 --include_path="C:/ti/ccs1271/ccs/ccs_base/msp430/include" --include_path="C:/Users/Alexander M/Documents/CCS/workspace_v12_alex2/PT_FINAL_2024_01" --include_path="C:/ti/ccs1271/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include" --advice:power=all --advice:hw_config=all --define=__MSP430FR2476__ --define=_FRWP_ENABLE --define=_INFO_FRWP_ENABLE -g --printf_support=minimal --diag_warning=225 --diag_wrap=off --display_error_number --silicon_errata=CPU21 --silicon_errata=CPU22 --silicon_errata=CPU40 --preproc_with_compile --preproc_dependency="uart_functions.d_raw"  "../uart_functions.c"
+"../uart_functions.c", line 41: remark #1528-D: (ULP 3.1) Detected flag polling using UCBUSY. Recommend using an interrupt combined with enter LPMx and ISR
+"../uart_functions.c", line 69: remark #1527-D: (ULP 2.1) Detected SW delay loop using __delay_cycles. Recommend using a timer module instead
+"../uart_functions.c", line 71: remark #1527-D: (ULP 2.1) Detected SW delay loop using empty loop. Recommend using a timer module instead
+"../uart_functions.c", line 114: remark #1527-D: (ULP 2.1) Detected SW delay loop using empty loop. Recommend using a timer module instead
+"../uart_functions.c", line 121: remark #1528-D: (ULP 3.1) Detected flag polling using UCA0IFG. Recommend using an interrupt combined with enter LPMx and ISR
+"../uart_functions.c", line 120: remark #1544-D: (ULP 13.1) Detected loop counting up. Recommend loops count down as detecting zeros is easier
+"../uart_functions.c", line 127: remark #1532-D: (ULP 5.3) Detected snprintf() operation(s). Recommend moving them to RAM during run time or not using as these are processing/power intensive
+Finished building: "../uart_functions.c"
+ 
+Building file: "../my_project_variables.c"
+Invoking: MSP430 Compiler
+"C:/ti/ccs1271/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/bin/cl430" -vmspx --use_hw_mpy=F5 --include_path="C:/ti/ccs1271/ccs/ccs_base/msp430/include" --include_path="C:/Users/Alexander M/Documents/CCS/workspace_v12_alex2/PT_FINAL_2024_01" --include_path="C:/ti/ccs1271/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include" --advice:power=all --advice:hw_config=all --define=__MSP430FR2476__ --define=_FRWP_ENABLE --define=_INFO_FRWP_ENABLE -g --printf_support=minimal --diag_warning=225 --diag_wrap=off --display_error_number --silicon_errata=CPU21 --silicon_errata=CPU22 --silicon_errata=CPU40 --preproc_with_compile --preproc_dependency="my_project_variables.d_raw"  "../my_project_variables.c"
+Finished building: "../my_project_variables.c"
+ 
+Building file: "../fsm.c"
+Invoking: MSP430 Compiler
+"C:/ti/ccs1271/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/bin/cl430" -vmspx --use_hw_mpy=F5 --include_path="C:/ti/ccs1271/ccs/ccs_base/msp430/include" --include_path="C:/Users/Alexander M/Documents/CCS/workspace_v12_alex2/PT_FINAL_2024_01" --include_path="C:/ti/ccs1271/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include" --advice:power=all --advice:hw_config=all --define=__MSP430FR2476__ --define=_FRWP_ENABLE --define=_INFO_FRWP_ENABLE -g --printf_support=minimal --diag_warning=225 --diag_wrap=off --display_error_number --silicon_errata=CPU21 --silicon_errata=CPU22 --silicon_errata=CPU40 --preproc_with_compile --preproc_dependency="fsm.d_raw"  "../fsm.c"
+"../fsm.c", line 19: remark #1544-D: (ULP 13.1) Detected loop counting up. Recommend loops count down as detecting zeros is easier
+"../fsm.c", line 20: remark #2553-D: (ULP 14.1) Array index (involving "i") of type "int". Recommend using "unsigned int"
+"../fsm.c", line 26: remark #2553-D: (ULP 14.1) Array index (involving "i") of type "int". Recommend using "unsigned int"
+"../fsm.c", line 26: remark #2553-D: (ULP 14.1) Array index (involving "i") of type "int". Recommend using "unsigned int"
+"../fsm.c", line 34: remark #2553-D: (ULP 14.1) Array index (involving "i") of type "int". Recommend using "unsigned int"
+"../fsm.c", line 44: remark #2553-D: (ULP 14.1) Array index (involving "i") of type "int". Recommend using "unsigned int"
+"../fsm.c", line 53: remark #1544-D: (ULP 13.1) Detected loop counting up. Recommend loops count down as detecting zeros is easier
+"../fsm.c", line 54: remark #2553-D: (ULP 14.1) Array index (involving "i") of type "int". Recommend using "unsigned int"
+"../fsm.c", line 79: remark #1544-D: (ULP 13.1) Detected loop counting up. Recommend loops count down as detecting zeros is easier
+"../fsm.c", line 89: remark #1544-D: (ULP 13.1) Detected loop counting up. Recommend loops count down as detecting zeros is easier
+"../fsm.c", line 136: remark #1544-D: (ULP 13.1) Detected loop counting up. Recommend loops count down as detecting zeros is easier
+"../fsm.c", line 271: remark #1544-D: (ULP 13.1) Detected loop counting up. Recommend loops count down as detecting zeros is easier
+"../fsm.c", line 386: remark #1535-D: (ULP 8.1) variable "quit" is used as a constant. Recommend declaring variable as either 'static const' or 'const'
+"../fsm.c", line 439: remark #1535-D: (ULP 8.1) variable "quit" is used as a constant. Recommend declaring variable as either 'static const' or 'const'
+"../fsm.c", line 501: remark #1535-D: (ULP 8.1) variable "quit" is used as a constant. Recommend declaring variable as either 'static const' or 'const'
+"../fsm.c", line 546: remark #1535-D: (ULP 8.1) variable "quit" is used as a constant. Recommend declaring variable as either 'static const' or 'const'
+"../fsm.c", line 596: remark #1535-D: (ULP 8.1) variable "quit" is used as a constant. Recommend declaring variable as either 'static const' or 'const'
+"../fsm.c", line 673: remark #1544-D: (ULP 13.1) Detected loop counting up. Recommend loops count down as detecting zeros is easier
+"../fsm.c", line 692: remark #1544-D: (ULP 13.1) Detected loop counting up. Recommend loops count down as detecting zeros is easier
+"../fsm.c", line 709: remark #1544-D: (ULP 13.1) Detected loop counting up. Recommend loops count down as detecting zeros is easier
+"../fsm.c", line 742: remark #1535-D: (ULP 8.1) variable "quit" is used as a constant. Recommend declaring variable as either 'static const' or 'const'
+Finished building: "../fsm.c"
+ 
+Building target: "PT_FINAL_2024_01.out"
+Invoking: MSP430 Linker
+"C:/ti/ccs1271/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/bin/cl430" -vmspx --use_hw_mpy=F5 --advice:power=all --advice:hw_config=all --define=__MSP430FR2476__ --define=_FRWP_ENABLE --define=_INFO_FRWP_ENABLE -g --printf_support=minimal --diag_warning=225 --diag_wrap=off --display_error_number --silicon_errata=CPU21 --silicon_errata=CPU22 --silicon_errata=CPU40 -z -m"PT_FINAL_2024_01.map" --heap_size=160 --stack_size=160 --cinit_hold_wdt=on -i"C:/ti/ccs1271/ccs/ccs_base/msp430/include" -i"C:/ti/ccs1271/ccs/ccs_base/msp430/lib/FR2xx" -i"C:/ti/ccs1271/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/lib" -i"C:/ti/ccs1271/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include" --priority --reread_libs --define=_FRWP_ENABLE --define=_INFO_FRWP_ENABLE --diag_wrap=off --display_error_number --warn_sections --xml_link_info="PT_FINAL_2024_01_linkInfo.xml" --use_hw_mpy=F5 --rom_model -o "PT_FINAL_2024_01.out" "./adc_functions.obj" "./fsm.obj" "./logging.obj" "./my_project_variables.obj" "./prueba_v3_c.obj" "./uart_functions.obj" "../lnk_msp430fr2476.cmd"  -lfrwp_init.a -llibc.a 
+<Linking>
+remark #10372-D: (ULP 4.1) Detected uninitialized Port 2 in this project. Recommend initializing all unused ports to eliminate wasted current consumption on unused pins.
+remark #10372-D: (ULP 4.1) Detected uninitialized Port 3 in this project. Recommend initializing all unused ports to eliminate wasted current consumption on unused pins.
+remark #10372-D: (ULP 4.1) Detected uninitialized Port 4 in this project. Recommend initializing all unused ports to eliminate wasted current consumption on unused pins.
+remark #10372-D: (ULP 4.1) Detected uninitialized Port 5 in this project. Recommend initializing all unused ports to eliminate wasted current consumption on unused pins.
+remark #10372-D: (ULP 4.1) Detected uninitialized Port 6 in this project. Recommend initializing all unused ports to eliminate wasted current consumption on unused pins.
+remark #10422-D: (ULP 6.2) Detected use of a device with available 32-bit hardware multiplier and not also using MSPMATHLIB library (libmath.a).  Recommend using MSPMATHLIB library (libmath.a) for improved performance.
+Finished building target: "PT_FINAL_2024_01.out"
+ 
+
+**** Build Finished ****
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+**** Build of configuration Debug for project PT_FINAL_2024_01 ****
+
+"C:\\ti\\ccs1271\\ccs\\utils\\bin\\gmake" -k -j 16 all -O 
+ 
+Building file: "../adc_functions.c"
+Invoking: MSP430 Compiler
+"C:/ti/ccs1271/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/bin/cl430" -vmspx --use_hw_mpy=F5 --include_path="C:/ti/ccs1271/ccs/ccs_base/msp430/include" --include_path="C:/Users/Alexander M/Documents/CCS/workspace_v12_alex2/PT_FINAL_2024_01" --include_path="C:/ti/ccs1271/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include" --advice:power=all --advice:hw_config=all --define=__MSP430FR2476__ --define=_FRWP_ENABLE --define=_INFO_FRWP_ENABLE -g --printf_support=minimal --diag_warning=225 --diag_wrap=off --display_error_number --silicon_errata=CPU21 --silicon_errata=CPU22 --silicon_errata=CPU40 --preproc_with_compile --preproc_dependency="adc_functions.d_raw"  "../adc_functions.c"
+"../adc_functions.c", line 23: remark #1528-D: (ULP 3.1) Detected flag polling using ADCIFG. Recommend using an interrupt combined with enter LPMx and ISR
+"../adc_functions.c", line 19: remark #1527-D: (ULP 2.1) Detected SW delay loop using __delay_cycles. Recommend using a timer module instead
+"../adc_functions.c", line 20: remark #1527-D: (ULP 2.1) Detected SW delay loop using empty loop. Recommend using a timer module instead
+"../adc_functions.c", line 39: remark #1530-D: (ULP 5.1) Detected divide operation(s). Recommend moving them to RAM during run time or not using as these are processing/power intensive
+"../adc_functions.c", line 58: remark #1528-D: (ULP 3.1) Detected flag polling using ADCIFG. Recommend using an interrupt combined with enter LPMx and ISR
+"../adc_functions.c", line 55: remark #1527-D: (ULP 2.1) Detected SW delay loop using __delay_cycles. Recommend using a timer module instead
+"../adc_functions.c", line 76: remark #1530-D: (ULP 5.1) Detected divide operation(s). Recommend moving them to RAM during run time or not using as these are processing/power intensive
+"../adc_functions.c", line 76 (col. 14): remark #1531-D: (ULP 5.2) Detected floating point operation(s). Recommend moving them to RAM during run time or not using as these are processing/power intensive
+Finished building: "../adc_functions.c"
+ 
+Building file: "../logging.c"
+Invoking: MSP430 Compiler
+"C:/ti/ccs1271/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/bin/cl430" -vmspx --use_hw_mpy=F5 --include_path="C:/ti/ccs1271/ccs/ccs_base/msp430/include" --include_path="C:/Users/Alexander M/Documents/CCS/workspace_v12_alex2/PT_FINAL_2024_01" --include_path="C:/ti/ccs1271/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include" --advice:power=all --advice:hw_config=all --define=__MSP430FR2476__ --define=_FRWP_ENABLE --define=_INFO_FRWP_ENABLE -g --printf_support=minimal --diag_warning=225 --diag_wrap=off --display_error_number --silicon_errata=CPU21 --silicon_errata=CPU22 --silicon_errata=CPU40 --preproc_with_compile --preproc_dependency="logging.d_raw"  "../logging.c"
+Finished building: "../logging.c"
+ 
+Building file: "../uart_functions.c"
+Invoking: MSP430 Compiler
+"C:/ti/ccs1271/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/bin/cl430" -vmspx --use_hw_mpy=F5 --include_path="C:/ti/ccs1271/ccs/ccs_base/msp430/include" --include_path="C:/Users/Alexander M/Documents/CCS/workspace_v12_alex2/PT_FINAL_2024_01" --include_path="C:/ti/ccs1271/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include" --advice:power=all --advice:hw_config=all --define=__MSP430FR2476__ --define=_FRWP_ENABLE --define=_INFO_FRWP_ENABLE -g --printf_support=minimal --diag_warning=225 --diag_wrap=off --display_error_number --silicon_errata=CPU21 --silicon_errata=CPU22 --silicon_errata=CPU40 --preproc_with_compile --preproc_dependency="uart_functions.d_raw"  "../uart_functions.c"
+"../uart_functions.c", line 41: remark #1528-D: (ULP 3.1) Detected flag polling using UCBUSY. Recommend using an interrupt combined with enter LPMx and ISR
+"../uart_functions.c", line 69: remark #1527-D: (ULP 2.1) Detected SW delay loop using __delay_cycles. Recommend using a timer module instead
+"../uart_functions.c", line 71: remark #1527-D: (ULP 2.1) Detected SW delay loop using empty loop. Recommend using a timer module instead
+"../uart_functions.c", line 114: remark #1527-D: (ULP 2.1) Detected SW delay loop using empty loop. Recommend using a timer module instead
+"../uart_functions.c", line 121: remark #1528-D: (ULP 3.1) Detected flag polling using UCA0IFG. Recommend using an interrupt combined with enter LPMx and ISR
+"../uart_functions.c", line 120: remark #1544-D: (ULP 13.1) Detected loop counting up. Recommend loops count down as detecting zeros is easier
+"../uart_functions.c", line 127: remark #1532-D: (ULP 5.3) Detected snprintf() operation(s). Recommend moving them to RAM during run time or not using as these are processing/power intensive
+Finished building: "../uart_functions.c"
+ 
+Building file: "../prueba_v3_c.c"
+Invoking: MSP430 Compiler
+"C:/ti/ccs1271/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/bin/cl430" -vmspx --use_hw_mpy=F5 --include_path="C:/ti/ccs1271/ccs/ccs_base/msp430/include" --include_path="C:/Users/Alexander M/Documents/CCS/workspace_v12_alex2/PT_FINAL_2024_01" --include_path="C:/ti/ccs1271/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include" --advice:power=all --advice:hw_config=all --define=__MSP430FR2476__ --define=_FRWP_ENABLE --define=_INFO_FRWP_ENABLE -g --printf_support=minimal --diag_warning=225 --diag_wrap=off --display_error_number --silicon_errata=CPU21 --silicon_errata=CPU22 --silicon_errata=CPU40 --preproc_with_compile --preproc_dependency="prueba_v3_c.d_raw"  "../prueba_v3_c.c"
+"../prueba_v3_c.c", line 283: remark #1538-D: (ULP 10.1) ISR RTC_ISR calls function new_event. Recommend moving function call away from ISR, or inlining the function, or using pragmas
+"../prueba_v3_c.c", line 327: remark #1528-D: (ULP 3.1) Detected flag polling using UCA0IFG. Recommend using an interrupt combined with enter LPMx and ISR
+"../prueba_v3_c.c", line 365: remark #1528-D: (ULP 3.1) Detected flag polling using UCA0IFG. Recommend using an interrupt combined with enter LPMx and ISR
+"../prueba_v3_c.c", line 400: remark #1527-D: (ULP 2.1) Detected SW delay loop using __delay_cycles. Recommend using a timer module instead
+"../prueba_v3_c.c", line 404: remark #1527-D: (ULP 2.1) Detected SW delay loop using empty loop. Recommend using a timer module instead
+Finished building: "../prueba_v3_c.c"
+ 
+Building file: "../my_project_variables.c"
+Invoking: MSP430 Compiler
+"C:/ti/ccs1271/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/bin/cl430" -vmspx --use_hw_mpy=F5 --include_path="C:/ti/ccs1271/ccs/ccs_base/msp430/include" --include_path="C:/Users/Alexander M/Documents/CCS/workspace_v12_alex2/PT_FINAL_2024_01" --include_path="C:/ti/ccs1271/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include" --advice:power=all --advice:hw_config=all --define=__MSP430FR2476__ --define=_FRWP_ENABLE --define=_INFO_FRWP_ENABLE -g --printf_support=minimal --diag_warning=225 --diag_wrap=off --display_error_number --silicon_errata=CPU21 --silicon_errata=CPU22 --silicon_errata=CPU40 --preproc_with_compile --preproc_dependency="my_project_variables.d_raw"  "../my_project_variables.c"
+Finished building: "../my_project_variables.c"
+ 
+Building file: "../fsm.c"
+Invoking: MSP430 Compiler
+"C:/ti/ccs1271/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/bin/cl430" -vmspx --use_hw_mpy=F5 --include_path="C:/ti/ccs1271/ccs/ccs_base/msp430/include" --include_path="C:/Users/Alexander M/Documents/CCS/workspace_v12_alex2/PT_FINAL_2024_01" --include_path="C:/ti/ccs1271/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include" --advice:power=all --advice:hw_config=all --define=__MSP430FR2476__ --define=_FRWP_ENABLE --define=_INFO_FRWP_ENABLE -g --printf_support=minimal --diag_warning=225 --diag_wrap=off --display_error_number --silicon_errata=CPU21 --silicon_errata=CPU22 --silicon_errata=CPU40 --preproc_with_compile --preproc_dependency="fsm.d_raw"  "../fsm.c"
+"../fsm.c", line 19: remark #1544-D: (ULP 13.1) Detected loop counting up. Recommend loops count down as detecting zeros is easier
+"../fsm.c", line 20: remark #2553-D: (ULP 14.1) Array index (involving "i") of type "int". Recommend using "unsigned int"
+"../fsm.c", line 26: remark #2553-D: (ULP 14.1) Array index (involving "i") of type "int". Recommend using "unsigned int"
+"../fsm.c", line 26: remark #2553-D: (ULP 14.1) Array index (involving "i") of type "int". Recommend using "unsigned int"
+"../fsm.c", line 34: remark #2553-D: (ULP 14.1) Array index (involving "i") of type "int". Recommend using "unsigned int"
+"../fsm.c", line 44: remark #2553-D: (ULP 14.1) Array index (involving "i") of type "int". Recommend using "unsigned int"
+"../fsm.c", line 53: remark #1544-D: (ULP 13.1) Detected loop counting up. Recommend loops count down as detecting zeros is easier
+"../fsm.c", line 54: remark #2553-D: (ULP 14.1) Array index (involving "i") of type "int". Recommend using "unsigned int"
+"../fsm.c", line 79: remark #1544-D: (ULP 13.1) Detected loop counting up. Recommend loops count down as detecting zeros is easier
+"../fsm.c", line 89: remark #1544-D: (ULP 13.1) Detected loop counting up. Recommend loops count down as detecting zeros is easier
+"../fsm.c", line 136: remark #1544-D: (ULP 13.1) Detected loop counting up. Recommend loops count down as detecting zeros is easier
+"../fsm.c", line 271: remark #1544-D: (ULP 13.1) Detected loop counting up. Recommend loops count down as detecting zeros is easier
+"../fsm.c", line 386: remark #1535-D: (ULP 8.1) variable "quit" is used as a constant. Recommend declaring variable as either 'static const' or 'const'
+"../fsm.c", line 439: remark #1535-D: (ULP 8.1) variable "quit" is used as a constant. Recommend declaring variable as either 'static const' or 'const'
+"../fsm.c", line 501: remark #1535-D: (ULP 8.1) variable "quit" is used as a constant. Recommend declaring variable as either 'static const' or 'const'
+"../fsm.c", line 546: remark #1535-D: (ULP 8.1) variable "quit" is used as a constant. Recommend declaring variable as either 'static const' or 'const'
+"../fsm.c", line 596: remark #1535-D: (ULP 8.1) variable "quit" is used as a constant. Recommend declaring variable as either 'static const' or 'const'
+"../fsm.c", line 673: remark #1544-D: (ULP 13.1) Detected loop counting up. Recommend loops count down as detecting zeros is easier
+"../fsm.c", line 692: remark #1544-D: (ULP 13.1) Detected loop counting up. Recommend loops count down as detecting zeros is easier
+"../fsm.c", line 709: remark #1544-D: (ULP 13.1) Detected loop counting up. Recommend loops count down as detecting zeros is easier
+"../fsm.c", line 742: remark #1535-D: (ULP 8.1) variable "quit" is used as a constant. Recommend declaring variable as either 'static const' or 'const'
+Finished building: "../fsm.c"
+ 
+Building target: "PT_FINAL_2024_01.out"
+Invoking: MSP430 Linker
+"C:/ti/ccs1271/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/bin/cl430" -vmspx --use_hw_mpy=F5 --advice:power=all --advice:hw_config=all --define=__MSP430FR2476__ --define=_FRWP_ENABLE --define=_INFO_FRWP_ENABLE -g --printf_support=minimal --diag_warning=225 --diag_wrap=off --display_error_number --silicon_errata=CPU21 --silicon_errata=CPU22 --silicon_errata=CPU40 -z -m"PT_FINAL_2024_01.map" --heap_size=160 --stack_size=160 --cinit_hold_wdt=on -i"C:/ti/ccs1271/ccs/ccs_base/msp430/include" -i"C:/ti/ccs1271/ccs/ccs_base/msp430/lib/FR2xx" -i"C:/ti/ccs1271/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/lib" -i"C:/ti/ccs1271/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include" --priority --reread_libs --define=_FRWP_ENABLE --define=_INFO_FRWP_ENABLE --diag_wrap=off --display_error_number --warn_sections --xml_link_info="PT_FINAL_2024_01_linkInfo.xml" --use_hw_mpy=F5 --rom_model -o "PT_FINAL_2024_01.out" "./adc_functions.obj" "./fsm.obj" "./logging.obj" "./my_project_variables.obj" "./prueba_v3_c.obj" "./uart_functions.obj" "../lnk_msp430fr2476.cmd"  -lfrwp_init.a -llibc.a 
+<Linking>
+remark #10372-D: (ULP 4.1) Detected uninitialized Port 2 in this project. Recommend initializing all unused ports to eliminate wasted current consumption on unused pins.
+remark #10372-D: (ULP 4.1) Detected uninitialized Port 3 in this project. Recommend initializing all unused ports to eliminate wasted current consumption on unused pins.
+remark #10372-D: (ULP 4.1) Detected uninitialized Port 4 in this project. Recommend initializing all unused ports to eliminate wasted current consumption on unused pins.
+remark #10372-D: (ULP 4.1) Detected uninitialized Port 5 in this project. Recommend initializing all unused ports to eliminate wasted current consumption on unused pins.
+remark #10372-D: (ULP 4.1) Detected uninitialized Port 6 in this project. Recommend initializing all unused ports to eliminate wasted current consumption on unused pins.
+remark #10422-D: (ULP 6.2) Detected use of a device with available 32-bit hardware multiplier and not also using MSPMATHLIB library (libmath.a).  Recommend using MSPMATHLIB library (libmath.a) for improved performance.
+Finished building target: "PT_FINAL_2024_01.out"
+ 
+
+**** Build Finished ****
+
+////////////////////////////////////////////////////////////////////////////////
+
+**** Build of configuration Debug for project PT_FINAL_2024_01 ****
+
+"C:\\ti\\ccs1271\\ccs\\utils\\bin\\gmake" -k -j 16 all -O 
+ 
+Building file: "../adc_functions.c"
+Invoking: MSP430 Compiler
+"C:/ti/ccs1271/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/bin/cl430" -vmspx --use_hw_mpy=F5 --include_path="C:/ti/ccs1271/ccs/ccs_base/msp430/include" --include_path="C:/Users/Alexander M/Documents/CCS/workspace_v12_alex2/PT_FINAL_2024_01" --include_path="C:/ti/ccs1271/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include" --advice:power=all --advice:hw_config=all --define=__MSP430FR2476__ --define=_FRWP_ENABLE --define=_INFO_FRWP_ENABLE -g --printf_support=minimal --diag_warning=225 --diag_wrap=off --display_error_number --silicon_errata=CPU21 --silicon_errata=CPU22 --silicon_errata=CPU40 --preproc_with_compile --preproc_dependency="adc_functions.d_raw"  "../adc_functions.c"
+"../adc_functions.c", line 23: remark #1528-D: (ULP 3.1) Detected flag polling using ADCIFG. Recommend using an interrupt combined with enter LPMx and ISR
+"../adc_functions.c", line 19: remark #1527-D: (ULP 2.1) Detected SW delay loop using __delay_cycles. Recommend using a timer module instead
+"../adc_functions.c", line 20: remark #1527-D: (ULP 2.1) Detected SW delay loop using empty loop. Recommend using a timer module instead
+"../adc_functions.c", line 39: remark #1530-D: (ULP 5.1) Detected divide operation(s). Recommend moving them to RAM during run time or not using as these are processing/power intensive
+"../adc_functions.c", line 58: remark #1528-D: (ULP 3.1) Detected flag polling using ADCIFG. Recommend using an interrupt combined with enter LPMx and ISR
+"../adc_functions.c", line 55: remark #1527-D: (ULP 2.1) Detected SW delay loop using __delay_cycles. Recommend using a timer module instead
+"../adc_functions.c", line 76: remark #1530-D: (ULP 5.1) Detected divide operation(s). Recommend moving them to RAM during run time or not using as these are processing/power intensive
+"../adc_functions.c", line 76 (col. 14): remark #1531-D: (ULP 5.2) Detected floating point operation(s). Recommend moving them to RAM during run time or not using as these are processing/power intensive
+Finished building: "../adc_functions.c"
+ 
+Building file: "../logging.c"
+Invoking: MSP430 Compiler
+"C:/ti/ccs1271/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/bin/cl430" -vmspx --use_hw_mpy=F5 --include_path="C:/ti/ccs1271/ccs/ccs_base/msp430/include" --include_path="C:/Users/Alexander M/Documents/CCS/workspace_v12_alex2/PT_FINAL_2024_01" --include_path="C:/ti/ccs1271/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include" --advice:power=all --advice:hw_config=all --define=__MSP430FR2476__ --define=_FRWP_ENABLE --define=_INFO_FRWP_ENABLE -g --printf_support=minimal --diag_warning=225 --diag_wrap=off --display_error_number --silicon_errata=CPU21 --silicon_errata=CPU22 --silicon_errata=CPU40 --preproc_with_compile --preproc_dependency="logging.d_raw"  "../logging.c"
+Finished building: "../logging.c"
+ 
+Building file: "../uart_functions.c"
+Invoking: MSP430 Compiler
+"C:/ti/ccs1271/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/bin/cl430" -vmspx --use_hw_mpy=F5 --include_path="C:/ti/ccs1271/ccs/ccs_base/msp430/include" --include_path="C:/Users/Alexander M/Documents/CCS/workspace_v12_alex2/PT_FINAL_2024_01" --include_path="C:/ti/ccs1271/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include" --advice:power=all --advice:hw_config=all --define=__MSP430FR2476__ --define=_FRWP_ENABLE --define=_INFO_FRWP_ENABLE -g --printf_support=minimal --diag_warning=225 --diag_wrap=off --display_error_number --silicon_errata=CPU21 --silicon_errata=CPU22 --silicon_errata=CPU40 --preproc_with_compile --preproc_dependency="uart_functions.d_raw"  "../uart_functions.c"
+"../uart_functions.c", line 41: remark #1528-D: (ULP 3.1) Detected flag polling using UCBUSY. Recommend using an interrupt combined with enter LPMx and ISR
+"../uart_functions.c", line 69: remark #1527-D: (ULP 2.1) Detected SW delay loop using __delay_cycles. Recommend using a timer module instead
+"../uart_functions.c", line 71: remark #1527-D: (ULP 2.1) Detected SW delay loop using empty loop. Recommend using a timer module instead
+"../uart_functions.c", line 114: remark #1527-D: (ULP 2.1) Detected SW delay loop using empty loop. Recommend using a timer module instead
+"../uart_functions.c", line 121: remark #1528-D: (ULP 3.1) Detected flag polling using UCA0IFG. Recommend using an interrupt combined with enter LPMx and ISR
+"../uart_functions.c", line 120: remark #1544-D: (ULP 13.1) Detected loop counting up. Recommend loops count down as detecting zeros is easier
+"../uart_functions.c", line 127: remark #1532-D: (ULP 5.3) Detected snprintf() operation(s). Recommend moving them to RAM during run time or not using as these are processing/power intensive
+Finished building: "../uart_functions.c"
+ 
+Building file: "../prueba_v3_c.c"
+Invoking: MSP430 Compiler
+"C:/ti/ccs1271/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/bin/cl430" -vmspx --use_hw_mpy=F5 --include_path="C:/ti/ccs1271/ccs/ccs_base/msp430/include" --include_path="C:/Users/Alexander M/Documents/CCS/workspace_v12_alex2/PT_FINAL_2024_01" --include_path="C:/ti/ccs1271/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include" --advice:power=all --advice:hw_config=all --define=__MSP430FR2476__ --define=_FRWP_ENABLE --define=_INFO_FRWP_ENABLE -g --printf_support=minimal --diag_warning=225 --diag_wrap=off --display_error_number --silicon_errata=CPU21 --silicon_errata=CPU22 --silicon_errata=CPU40 --preproc_with_compile --preproc_dependency="prueba_v3_c.d_raw"  "../prueba_v3_c.c"
+"../prueba_v3_c.c", line 283: remark #1538-D: (ULP 10.1) ISR RTC_ISR calls function new_event. Recommend moving function call away from ISR, or inlining the function, or using pragmas
+"../prueba_v3_c.c", line 327: remark #1528-D: (ULP 3.1) Detected flag polling using UCA0IFG. Recommend using an interrupt combined with enter LPMx and ISR
+"../prueba_v3_c.c", line 365: remark #1528-D: (ULP 3.1) Detected flag polling using UCA0IFG. Recommend using an interrupt combined with enter LPMx and ISR
+"../prueba_v3_c.c", line 400: remark #1527-D: (ULP 2.1) Detected SW delay loop using __delay_cycles. Recommend using a timer module instead
+"../prueba_v3_c.c", line 404: remark #1527-D: (ULP 2.1) Detected SW delay loop using empty loop. Recommend using a timer module instead
+Finished building: "../prueba_v3_c.c"
+ 
+Building file: "../my_project_variables.c"
+Invoking: MSP430 Compiler
+"C:/ti/ccs1271/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/bin/cl430" -vmspx --use_hw_mpy=F5 --include_path="C:/ti/ccs1271/ccs/ccs_base/msp430/include" --include_path="C:/Users/Alexander M/Documents/CCS/workspace_v12_alex2/PT_FINAL_2024_01" --include_path="C:/ti/ccs1271/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include" --advice:power=all --advice:hw_config=all --define=__MSP430FR2476__ --define=_FRWP_ENABLE --define=_INFO_FRWP_ENABLE -g --printf_support=minimal --diag_warning=225 --diag_wrap=off --display_error_number --silicon_errata=CPU21 --silicon_errata=CPU22 --silicon_errata=CPU40 --preproc_with_compile --preproc_dependency="my_project_variables.d_raw"  "../my_project_variables.c"
+Finished building: "../my_project_variables.c"
+ 
+Building file: "../fsm.c"
+Invoking: MSP430 Compiler
+"C:/ti/ccs1271/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/bin/cl430" -vmspx --use_hw_mpy=F5 --include_path="C:/ti/ccs1271/ccs/ccs_base/msp430/include" --include_path="C:/Users/Alexander M/Documents/CCS/workspace_v12_alex2/PT_FINAL_2024_01" --include_path="C:/ti/ccs1271/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include" --advice:power=all --advice:hw_config=all --define=__MSP430FR2476__ --define=_FRWP_ENABLE --define=_INFO_FRWP_ENABLE -g --printf_support=minimal --diag_warning=225 --diag_wrap=off --display_error_number --silicon_errata=CPU21 --silicon_errata=CPU22 --silicon_errata=CPU40 --preproc_with_compile --preproc_dependency="fsm.d_raw"  "../fsm.c"
+"../fsm.c", line 19: remark #1544-D: (ULP 13.1) Detected loop counting up. Recommend loops count down as detecting zeros is easier
+"../fsm.c", line 20: remark #2553-D: (ULP 14.1) Array index (involving "i") of type "int". Recommend using "unsigned int"
+"../fsm.c", line 26: remark #2553-D: (ULP 14.1) Array index (involving "i") of type "int". Recommend using "unsigned int"
+"../fsm.c", line 26: remark #2553-D: (ULP 14.1) Array index (involving "i") of type "int". Recommend using "unsigned int"
+"../fsm.c", line 34: remark #2553-D: (ULP 14.1) Array index (involving "i") of type "int". Recommend using "unsigned int"
+"../fsm.c", line 44: remark #2553-D: (ULP 14.1) Array index (involving "i") of type "int". Recommend using "unsigned int"
+"../fsm.c", line 53: remark #1544-D: (ULP 13.1) Detected loop counting up. Recommend loops count down as detecting zeros is easier
+"../fsm.c", line 54: remark #2553-D: (ULP 14.1) Array index (involving "i") of type "int". Recommend using "unsigned int"
+"../fsm.c", line 79: remark #1544-D: (ULP 13.1) Detected loop counting up. Recommend loops count down as detecting zeros is easier
+"../fsm.c", line 89: remark #1544-D: (ULP 13.1) Detected loop counting up. Recommend loops count down as detecting zeros is easier
+"../fsm.c", line 136: remark #1544-D: (ULP 13.1) Detected loop counting up. Recommend loops count down as detecting zeros is easier
+"../fsm.c", line 271: remark #1544-D: (ULP 13.1) Detected loop counting up. Recommend loops count down as detecting zeros is easier
+"../fsm.c", line 386: remark #1535-D: (ULP 8.1) variable "quit" is used as a constant. Recommend declaring variable as either 'static const' or 'const'
+"../fsm.c", line 439: remark #1535-D: (ULP 8.1) variable "quit" is used as a constant. Recommend declaring variable as either 'static const' or 'const'
+"../fsm.c", line 501: remark #1535-D: (ULP 8.1) variable "quit" is used as a constant. Recommend declaring variable as either 'static const' or 'const'
+"../fsm.c", line 546: remark #1535-D: (ULP 8.1) variable "quit" is used as a constant. Recommend declaring variable as either 'static const' or 'const'
+"../fsm.c", line 596: remark #1535-D: (ULP 8.1) variable "quit" is used as a constant. Recommend declaring variable as either 'static const' or 'const'
+"../fsm.c", line 673: remark #1544-D: (ULP 13.1) Detected loop counting up. Recommend loops count down as detecting zeros is easier
+"../fsm.c", line 692: remark #1544-D: (ULP 13.1) Detected loop counting up. Recommend loops count down as detecting zeros is easier
+"../fsm.c", line 709: remark #1544-D: (ULP 13.1) Detected loop counting up. Recommend loops count down as detecting zeros is easier
+"../fsm.c", line 742: remark #1535-D: (ULP 8.1) variable "quit" is used as a constant. Recommend declaring variable as either 'static const' or 'const'
+Finished building: "../fsm.c"
+ 
+Building target: "PT_FINAL_2024_01.out"
+Invoking: MSP430 Linker
+"C:/ti/ccs1271/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/bin/cl430" -vmspx --use_hw_mpy=F5 --advice:power=all --advice:hw_config=all --define=__MSP430FR2476__ --define=_FRWP_ENABLE --define=_INFO_FRWP_ENABLE -g --printf_support=minimal --diag_warning=225 --diag_wrap=off --display_error_number --silicon_errata=CPU21 --silicon_errata=CPU22 --silicon_errata=CPU40 -z -m"PT_FINAL_2024_01.map" --heap_size=160 --stack_size=160 --cinit_hold_wdt=on -i"C:/ti/ccs1271/ccs/ccs_base/msp430/include" -i"C:/ti/ccs1271/ccs/ccs_base/msp430/lib/FR2xx" -i"C:/ti/ccs1271/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/lib" -i"C:/ti/ccs1271/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include" --priority --reread_libs --define=_FRWP_ENABLE --define=_INFO_FRWP_ENABLE --diag_wrap=off --display_error_number --warn_sections --xml_link_info="PT_FINAL_2024_01_linkInfo.xml" --use_hw_mpy=F5 --rom_model -o "PT_FINAL_2024_01.out" "./adc_functions.obj" "./fsm.obj" "./logging.obj" "./my_project_variables.obj" "./prueba_v3_c.obj" "./uart_functions.obj" "../lnk_msp430fr2476.cmd"  -lfrwp_init.a -llibc.a 
+<Linking>
+remark #10372-D: (ULP 4.1) Detected uninitialized Port 2 in this project. Recommend initializing all unused ports to eliminate wasted current consumption on unused pins.
+remark #10372-D: (ULP 4.1) Detected uninitialized Port 3 in this project. Recommend initializing all unused ports to eliminate wasted current consumption on unused pins.
+remark #10372-D: (ULP 4.1) Detected uninitialized Port 4 in this project. Recommend initializing all unused ports to eliminate wasted current consumption on unused pins.
+remark #10372-D: (ULP 4.1) Detected uninitialized Port 5 in this project. Recommend initializing all unused ports to eliminate wasted current consumption on unused pins.
+remark #10372-D: (ULP 4.1) Detected uninitialized Port 6 in this project. Recommend initializing all unused ports to eliminate wasted current consumption on unused pins.
+remark #10422-D: (ULP 6.2) Detected use of a device with available 32-bit hardware multiplier and not also using MSPMATHLIB library (libmath.a).  Recommend using MSPMATHLIB library (libmath.a) for improved performance.
+Finished building target: "PT_FINAL_2024_01.out"
+ 
+
+**** Build Finished ****
+
+
+							
