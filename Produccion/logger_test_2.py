@@ -88,5 +88,5 @@ if comms.get_connection():
     comms.get_events()                  
     comms.set_mode(0)                   # Mode changed: OK
     comms.toggle_led()                  # Toggled LED OFF
-    comms.get_mode()                    # Mode: 3
+    comms.get_mode()                    # Mode: 0
     comms.quit_logger()                 # Quit

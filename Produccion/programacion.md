@@ -18,7 +18,11 @@ Se recomienda realizar este procedimiento paralelizando con 2 bases y 1 placa de
 
 Repetir los siguientes pasos:
 1. Sacar 5 pilas del blister
-2. Colocar cada pila en un logger, chequear polaridad
+2. Para 5 loggers, realizar los siguientes pasos:
+    2.1. Conectar a la base (sin pila) y correr script comms_test.py
+    2.2. Mientras está el led prendido, colocarle una pila
+    2.3. Volver a correr script comms_test.py -> Si no se comunica, repetir paso 2.2.
+    2.4. Desconectar de la base
 3. Medir con el tester Vcc con GND -> Debería dar ~3.3V -> Si da menos de 3.20V, cambiarla
 5. Preparar poxipol CHIQUITO
 4. Pegar solapa con poxipol, intentar no dejar burbujas

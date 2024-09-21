@@ -11,8 +11,8 @@
 #define SETTING_INPUT_FINISHED ']'
 
 
-#define ENABLE_5V     digitalWrite(PIN_5V_ENABLE,LOW)
-#define DISABLE_5V    digitalWrite(PIN_5V_ENABLE,HIGH)
+#define ENABLE_5V     digitalWrite(PIN_5V_ENABLE,HIGH)
+#define DISABLE_5V    digitalWrite(PIN_5V_ENABLE,LOW)
 
 #define ENABLE_TX     digitalWrite(PIN_TX_ENABLE,LOW)
 #define DISABLE_TX    digitalWrite(PIN_TX_ENABLE,HIGH)
