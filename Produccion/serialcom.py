@@ -45,8 +45,16 @@ LONG_WAIT_TIME = 3*60
 class Serial:
 	
     def __init__(self, port, baudrate) -> None:
+        self.port = port
         self.serial = serial.Serial(port=port, baudrate=baudrate, timeout=SHORT_WAIT_TIME)
         self.try_connection()
+
+    def close_port(self) -> None:
+        self.port.close()
+
+    def open_port(self) -> None:
+        self.port.close() # por las dudas
+        self.port.open()
 
     def try_connection(self):
         res = self.read_serial_until()

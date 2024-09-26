@@ -21,50 +21,84 @@
 import serial.tools.list_ports
 import time
 import threading
-import sys
+import sys                                  # Para las excepciones
+from datetime import datetime
+import time
+from serialcom import Serial                # NUESTRA libreria
 
-# OBTENGO LOS COMs EXISTENTES, QUE SEAN DE Silicon Labs
 
-comports = serial.tools.list_ports.comports()
-# print("COMPORTS =", comports)
-ports = [tuple(p) for p in list(comports)]
-# print("PORTS =", ports)
-portstring = 'Dispositivo' #'Silicon Labs'
-availablePorts = list(filter(lambda x: portstring in x[1], ports))
-# print("AVAILABLE PORTS =", availablePorts)
-availablePortNumbers = [p[0] for p in availablePorts]
-# print("AVAILABLE PORT NUMBERS =", availablePortNumbers)
-# TODO: printear solo lo importante de esto (hay algo? Un mensage de OK?)
+def find_ports():
+    comports = serial.tools.list_ports.comports()
+    ports = [tuple(p) for p in list(comports)]
+    portstring = 'Dispositivo' #'Silicon Labs'
+    availablePorts = list(filter(lambda x: portstring in x[1], ports))
+    availablePortNumbers = [p[0] for p in availablePorts]
+    return availablePortNumbers
 
-# ME FIJO SI ALGUNO ESTA DISPONIBLE
+def open_available_port(portNumbers):
+    s = None
+    available = False
+    for p in portNumbers:
+        print("CONECTANDO A",p)
+        try:
+            s = Serial(p,115200)
+            available = True
+            break
+        except serial.serialutil.SerialException:
+            print(p, "no se pudo abrir\n")
+        except:
+            print("ERROR FATAL!!!\nOcurrió un error imprevisto, que no es del tipo serial.serialutil.SerialException")
+            print("El error fue de tipo",sys.exc_info()[0])
+    if available:
+        return s
+    else:
+        print("NO SE ENCONTRÓ PUERTO DISPONIBLE!")
+        return None
 
-# availablePortNumbers = ['COM2','COM3','COM4','COM5']
+def talkativeSleep(seconds):
+    remaining = seconds
+    timePassed = 0
+    while remaining > 0:
+        print(timePassed)
+        print('\033[F', end='')
+        time.sleep(min(1,remaining))
+        timePassed += 1
+        remaining -= 1
+    print(seconds)
 
-s = None
-available = False
-for i,p in enumerate(availablePortNumbers):
-    # comms = Serial(p, 115200)
-    # print(i, "\t" , p)
-    print("CONECTANDO A",p)
-# TODO: usar nuestro creado Serial y no el serial.Serial de la libreria
-    try:
-        s = serial.Serial(p,115200)
-        available = True
-        break
-    except serial.serialutil.SerialException as e:
-        # print("SERIAL EXCEPTION =",e)
-        print(p, "no se pudo abrir")
-        # print(e)
-    except:
-        print("ERROR FATAL!!!\nOcurrio un error imprevisto, que no es del tipo serial.serialutil.SerialException")
-        print("El error fue de tipo",sys.exc_info()[0])
-    # print(s)
-    # s.timeout = 1
-    # print(s.readline())
-# print("AVAILABLE =",available)
-# print(s)
+def activate():
+    print("INICIANDO ACTIVACION\n")
+    # OBTENGO LOS COMs EXISTENTES, QUE SEAN DE Silicon Labs
+    availablePortNumbers = find_ports()
+    # ME FIJO SI ALGUNO ESTA DISPONIBLE
+    comms = open_available_port(availablePortNumbers)
+    if comms == None:
+        return
+    # HAY UN COM DISPONIBLE
+    # ME FIJO SI HUBO CONECCION CON EL LOGGER, DE LO CONTRARIO, INTENTO RECONECTAR
+    while not comms.get_connection():
+        # https://stackoverflow.com/questions/76553420/esp32-consistently-restarting-after-closing-serial-connection
+        comms.close_port()
+        talkativeSleep(10)
+        comms.open_port()
+        comms.try_connection()
+    # EVENTUALMENTE, SE CONSIGUE LA CONEXION
 
-if not available:
-    print("NO SE ENCONTRO PUERTO DISPONIBLE!")
-else:
-    print("SE CONECTO A",s.port,"!!!")
+    comms.get_logger_id()                           # Logger ID: id
+    penguin_name = comms.get_penguin_name()         # Penguin Name: Pingu
+    if penguin_name != "Pingu":
+        print("WARNING !!! Penguin name was NOT Pingu (for some reason...) !!!")
+    mode = comms.get_mode()                         # Mode: 0
+    if mode != 0:
+        print("MEGA WARNING !!! Logger was not inactive (mode != 0) !!!")
+    wetdry_freq = comms.get_wetdry_freq()           # WetDry frequency: 1
+    if wetdry_freq != 10:
+        print("WARNING !!! WetDry frequency was NOT 10 !!!")
+    temp_freq = comms.get_temp_freq()               # Temperature frequency: 1
+    if temp_freq != 10:
+        print("WARNING !!! Temperature frequency was NOT 10 !!!")
+    
+    
+
+
+activate()
