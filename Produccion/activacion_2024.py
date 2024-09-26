@@ -84,21 +84,43 @@ def activate():
         comms.try_connection()
     # EVENTUALMENTE, SE CONSIGUE LA CONEXION
 
+    fsmState = comms.get_logger_state()
+    if fsmState != 1:
+        print("WARNING !!! FSM was not in Debug Menu !!!")
+
     comms.get_logger_id()                           # Logger ID: id
-    penguin_name = comms.get_penguin_name()         # Penguin Name: Pingu
+    comms.get_30C_value()                           # Calibration value at 30°C: nro
+    comms.get_105C_value()                          # Calibration value at 105°C: nro
+
+    calibratedMin = comms.get_calibrated_min()      # Autocalibrated minute: nro
+    if calibratedMin < 150 or calibratedMin > 300:
+        print("WARNING! calibrated min is outside range [150, 300]")
+
+    comms.set_penguin_name("Pingu")                     # Name changed: OK
+    penguin_name = comms.get_penguin_name()             # Penguin Name: Pingu
     if penguin_name != "Pingu":
-        print("WARNING !!! Penguin name was NOT Pingu (for some reason...) !!!")
-    mode = comms.get_mode()                         # Mode: 0
-    if mode != 0:
-        print("MEGA WARNING !!! Logger was not inactive (mode != 0) !!!")
+        print("ERROR! penguin_name was not set to Pingu")
+
+    comms.set_wetdry_freq(10)                       # WetDry frequency changed: OK
     wetdry_freq = comms.get_wetdry_freq()           # WetDry frequency: 1
     if wetdry_freq != 10:
-        print("WARNING !!! WetDry frequency was NOT 10 !!!")
+        print("WARNING !!! WetDry frequency was not set to 10 !!!")
+
+    comms.set_temp_freq(10)                         # Temperature frequency changed: OK
     temp_freq = comms.get_temp_freq()               # Temperature frequency: 1
     if temp_freq != 10:
-        print("WARNING !!! Temperature frequency was NOT 10 !!!")
+        print("WARNING !!! Temperature frequency was not set to 10 !!!")
     
-    
+    comms.set_mode(3)                               # Mode changed: OK
+    mode = comms.get_mode()                         # Mode: 3
+    if mode != 0:
+        print("MEGA WARNING !!! Logger was not set to both !!!")
 
+    d = datetime.now(timestamp)
+    timestamp = datetime.strftime(d, "%Y%m%d %H%M%S")  
+    comms.set_activation_time(timestamp)                    # Activation time changed: OK
+    comms.get_activation_time()                             # Activation time: Y2024M09D10h04m50s42
+
+    comms.quit_logger()
 
 activate()
