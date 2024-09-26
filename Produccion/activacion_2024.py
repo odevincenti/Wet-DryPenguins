@@ -10,7 +10,6 @@
 # import time
 
 # TODO ANTES DE ENTREGAR
-# [ ] Reemplazar portstring = 'Dispositivo' por 'Silicon Labs'
 # [ ] Limpiar el codigo
 
 #################
@@ -30,7 +29,7 @@ from serialcom import Serial                # NUESTRA libreria
 def find_ports():
     comports = serial.tools.list_ports.comports()
     ports = [tuple(p) for p in list(comports)]
-    portstring = 'Dispositivo' #'Silicon Labs'
+    portstring = 'Silicon Labs'
     availablePorts = list(filter(lambda x: portstring in x[1], ports))
     availablePortNumbers = [p[0] for p in availablePorts]
     return availablePortNumbers
