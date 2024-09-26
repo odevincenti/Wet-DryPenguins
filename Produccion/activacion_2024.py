@@ -112,10 +112,10 @@ def activate():
     
     comms.set_mode(3)                               # Mode changed: OK
     mode = comms.get_mode()                         # Mode: 3
-    if mode != 0:
+    if mode != 3:
         print("MEGA WARNING !!! Logger was not set to both !!!")
 
-    d = datetime.now(timestamp)
+    d = datetime.now()
     timestamp = datetime.strftime(d, "%Y%m%d %H%M%S")  
     comms.set_activation_time(timestamp)                    # Activation time changed: OK
     comms.get_activation_time()                             # Activation time: Y2024M09D10h04m50s42

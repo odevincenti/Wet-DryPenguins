@@ -169,7 +169,7 @@ class Serial:
         time.sleep(SHORT_WAIT_TIME)
         self.read_serial(SHORT_WAIT_TIME)
         self.read_serial(SHORT_WAIT_TIME)
-        return self.read_serial_and_print(print_description= "Activation time changed:")
+        return self.read_serial_and_print(print_description= "Activation time changed")
 
     def get_30C_value(self):
         self.write_serial('3')
@@ -192,7 +192,7 @@ class Serial:
             res = self.read_serial_and_print(print_description= "Mode:")
         except ValueError:
             res = self.read_serial_and_print(print_description= "Mode:")
-        return res
+        return int(res)
     
     def set_mode(self, mode):
         self.write_serial('m' + str(mode))
