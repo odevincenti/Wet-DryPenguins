@@ -92,8 +92,8 @@ def activate():
     comms.get_105C_value()                          # Calibration value at 105°C: nro
 
     calibratedMin = comms.get_calibrated_min()      # Autocalibrated minute: nro
-    if calibratedMin < 150 or calibratedMin > 300:
-        print("WARNING! calibrated min is outside range [150, 300]")
+    if calibratedMin < 1500 or calibratedMin > 3000:
+        print("WARNING! calibrated min is outside range [1500, 3000]")
 
     comms.set_penguin_name("Pingu")                     # Name changed: OK
     penguin_name = comms.get_penguin_name()             # Penguin Name: Pingu
